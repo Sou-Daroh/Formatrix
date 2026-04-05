@@ -25,8 +25,7 @@ Convert images, transform data, and manipulate PDFs — all processed locally on
 ### Prerequisites
 
 - [Rust](https://rustup.rs/) (stable, 1.77+)
-- [Node.js](https://nodejs.org/) (20+)
-- [pnpm](https://pnpm.io/) (`npm install -g pnpm`)
+- [Bun](https://bun.sh/) (1.x+)
 - Platform dependencies — see [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)
 
 ### Run in development
@@ -34,14 +33,14 @@ Convert images, transform data, and manipulate PDFs — all processed locally on
 ```bash
 git clone https://github.com/Sou-Daroh/formatrix
 cd formatrix
-pnpm install
-pnpm tauri dev
+bun install
+bun tauri dev
 ```
 
 ### Build for production
 
 ```bash
-pnpm tauri build
+bun tauri build
 ```
 
 Output installers are in `src-tauri/target/release/bundle/`.
