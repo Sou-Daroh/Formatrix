@@ -1,0 +1,61 @@
+:root {
+  --bg: #0c0c0e;
+  --surface: #141416;
+  --surface-2: #1c1c20;
+  --border: #26262e;
+  --border-2: #32323c;
+  --text: #e2e2e8;
+  --text-2: #8888a0;
+  --text-3: #55556a;
+  --accent: #f59e0b;
+  --accent-dim: rgba(245, 158, 11, 0.12);
+  --accent-glow: rgba(245, 158, 11, 0.06);
+  --success: #10b981;
+  --error: #ef4444;
+}
+
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "DM Sans", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow: hidden;
+  user-select: none;
+}
+
+#app {
+  height: 100%;
+}
+
+::selection {
+  background: var(--accent-dim);
+  color: var(--text);
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-2);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-3);
+}
