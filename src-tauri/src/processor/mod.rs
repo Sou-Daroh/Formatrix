@@ -43,7 +43,6 @@ pub struct ProgressPayload {
 pub fn create_temp_dir() -> Result<std::path::PathBuf, String> {
     let id = uuid::Uuid::new_v4().to_string();
     let dir = std::env::temp_dir().join("formatrix").join(&id);
-    std::fs::create_dir_all(&dir)
-        .map_err(|e| format!("could not create temp directory: {}", e))?;
+    std::fs::create_dir_all(&dir).map_err(|e| format!("could not create temp directory: {}", e))?;
     Ok(dir)
 }

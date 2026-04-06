@@ -11,8 +11,7 @@ use image::GenericImageView;
 /// If only one dimension is set, aspect ratio is maintained.
 /// If both are set, the image is fit within the bounding box (no crop).
 pub fn process(input_path: &str, options: &ImageOptions) -> Result<ProcessResult, String> {
-    let img = image::open(input_path)
-        .map_err(|e| format!("could not open image: {}", e))?;
+    let img = image::open(input_path).map_err(|e| format!("could not open image: {}", e))?;
 
     let (orig_w, orig_h) = img.dimensions();
     let (new_w, new_h) = calculate_dimensions(orig_w, orig_h, options.width, options.height);
@@ -41,7 +40,11 @@ pub fn process(input_path: &str, options: &ImageOptions) -> Result<ProcessResult
 
     match ext {
         "jpeg" => {
-            let quality = if options.quality == 0 { 85 } else { options.quality };
+            let quality = if options.quality == 0 {
+                85
+            } else {
+                options.quality
+            };
             let mut writer = std::fs::File::create(&output_path)
                 .map_err(|e| format!("could not create output file: {}", e))?;
             let encoder = image::codecs::jpeg::JpegEncoder::new_with_quality(&mut writer, quality);
