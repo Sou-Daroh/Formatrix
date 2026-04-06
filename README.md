@@ -26,7 +26,6 @@ Convert images, transform data, and manipulate PDFs — all processed locally on
 
 - [Rust](https://rustup.rs/) (stable, 1.77+)
 - [Bun](https://bun.sh/) (1.x+)
-- Platform dependencies — see [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)
 
 ### Run in development
 
@@ -74,15 +73,11 @@ formatrix/
 └── package.json
 ```
 
-Full structure in [docs/PROJECT_STRUCTURE.md](docs/PROJECT_STRUCTURE.md).
-
 ---
 
 ## Relationship to Formatrix Web
 
 Formatrix Desktop is the first phase of the Formatrix project. The web application (phase 2) will expose the same four operations via a browser interface with a Go backend. The operation specifications, UI design language, and feature set are shared between the two phases.
-
-See [docs/PROJECT_OVERVIEW.md](docs/PROJECT_OVERVIEW.md) for the full two-phase roadmap.
 
 ---
 
