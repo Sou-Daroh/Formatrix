@@ -24,10 +24,9 @@ pub async fn process_image(
 
     // CPU-bound task runs in a separate thread pool
     tokio::task::spawn_blocking(move || {
-        let result = processor::image::process(&input_path, &options);
         // We can't emit progress _from within_ the sync blocking task easily without a channel,
         // but for short tasks this is fine.
-        result
+        processor::image::process(&input_path, &options)
     })
     .await
     .map_err(|e| format!("thread panic: {}", e))?
