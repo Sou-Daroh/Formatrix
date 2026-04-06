@@ -1,5 +1,6 @@
 pub mod csv;
 pub mod image;
+pub mod pdf_merge;
 pub mod pdf_text;
 
 use serde::{Deserialize, Serialize};
