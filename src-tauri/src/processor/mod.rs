@@ -1,3 +1,4 @@
+pub mod csv;
 pub mod image;
 
 use serde::{Deserialize, Serialize};
