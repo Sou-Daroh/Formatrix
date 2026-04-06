@@ -1,5 +1,7 @@
+use super::{create_temp_dir, PdfSplitOptions, ProcessResult};
 use lopdf::{Document, Object, ObjectId};
 use std::collections::BTreeMap;
+use std::io::Write;
 
 pub fn merge(input_paths: &[String]) -> Result<ProcessResult, String> {
     if input_paths.len() < 2 {
@@ -29,14 +31,14 @@ pub fn merge(input_paths: &[String]) -> Result<ProcessResult, String> {
     let mut pages_object: Option<(ObjectId, Object)> = None;
 
     for (object_id, object) in documents_objects {
-        match object.type_name().unwrap_or(b"") {
-            b"Catalog" => {
+        match object.type_name().unwrap_or("") {
+            "Catalog" => {
                 catalog_object = Some((
                     catalog_object.map(|(id, _)| id).unwrap_or(object_id),
                     object,
                 ));
             }
-            b"Pages" => {
+            "Pages" => {
                 if let Ok(dictionary) = object.as_dict() {
                     let mut dictionary = dictionary.clone();
                     if let Some((_, ref old_object)) = pages_object {
@@ -50,7 +52,7 @@ pub fn merge(input_paths: &[String]) -> Result<ProcessResult, String> {
                     ));
                 }
             }
-            b"Page" | b"Outlines" | b"Outline" => {}
+            "Page" | "Outlines" | "Outline" => {}
             _ => {
                 document.objects.insert(object_id, object);
             }
