@@ -19,12 +19,18 @@
     "svelte": "^5"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@sveltejs/vite-plugin-svelte": "^5",
     "@tauri-apps/cli": "^2",
+    "@typescript-eslint/eslint-plugin": "^8.58.0",
+    "@typescript-eslint/parser": "^8.58.0",
     "eslint": "^9",
+    "eslint-plugin-svelte": "^3.17.0",
+    "globals": "^17.4.0",
     "prettier": "^3",
     "prettier-plugin-svelte": "^3",
     "svelte-check": "^4",
+    "svelte-eslint-parser": "^1.6.0",
     "typescript": "^5",
     "vite": "^6"
   }
