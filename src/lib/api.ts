@@ -15,15 +15,14 @@ export interface ProgressPayload {
 
 // --- Processor Options ---
 export interface ImageOptions {
-  width?: number | null;
-  height?: number | null;
-  quality: number; // 0-100
-  format?: string | null;
+  width: number; // 0 = auto
+  height: number; // 0 = auto
+  quality: number; // 0-100, 0 = default
+  format: string; // "jpeg" | "png" | "webp" | "" for same
 }
 
 export interface CsvOptions {
-  delimiter: string;
-  has_headers: boolean;
+  pretty: boolean;
 }
 
 export interface PdfSplitOptions {
