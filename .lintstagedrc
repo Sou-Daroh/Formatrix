@@ -1,0 +1,4 @@
+{
+  "src/**/*.{js,ts,svelte,css,json,md}": ["prettier --write"],
+  "src-tauri/**/*.rs": ["cargo fmt --manifest-path src-tauri/Cargo.toml --"]
+}

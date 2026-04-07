@@ -1,10 +1,4 @@
 
 
-echo "Formatting frontend code with Prettier..."
-bun run format
-
-echo "Formatting Rust backend code with rustfmt..."
-cargo fmt --manifest-path src-tauri/Cargo.toml
-
-# Re-stage formatted files dynamically
-git add -u
+echo "Linting and formatting explicitly staged files..."
+bunx lint-staged
