@@ -1,5 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
-import { listen } from "@tauri-apps/api/event";
+import { listen, type UnlistenFn } from "@tauri-apps/api/event";
+import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 
 // --- Shared Types ---
 export interface ProcessResult {
@@ -95,8 +96,41 @@ export async function processPdfSplit(
 // Events
 export async function listenToProgress(
   callback: (payload: ProgressPayload) => void,
-) {
-  return listen<ProgressPayload>("progress", (event) => {
+): Promise<UnlistenFn> {
+  return await listen<ProgressPayload>("progress", (event) => {
     callback(event.payload);
   });
+}
+
+/**
+ * Listens for native OS file drop events on the Tauri window.
+ * Returns the absolute paths of the dropped files.
+ */
+export async function listenForFileDrop(
+  callback: (paths: string[]) => void,
+): Promise<UnlistenFn> {
+  const unlisten1 = await getCurrentWebviewWindow().onDragDropEvent((event) => {
+    if (event.payload.type === "drop") {
+      callback(event.payload.paths);
+    }
+  });
+
+  const unlisten2 = await listen<{ paths: string[] }>("tauri://drag-drop", (event) => {
+    if (event.payload && event.payload.paths) callback(event.payload.paths);
+  });
+
+  const unlisten3 = await listen<{ paths: string[] }>("tauri://drop", (event) => {
+    if (event.payload && event.payload.paths) callback(event.payload.paths);
+  });
+  
+  const unlisten4 = await listen<{ paths: string[] }>("tauri://file-drop", (event) => {
+    if (event.payload && event.payload.paths) callback(event.payload.paths);
+  });
+
+  return () => {
+    unlisten1();
+    unlisten2();
+    unlisten3();
+    unlisten4();
+  };
 }

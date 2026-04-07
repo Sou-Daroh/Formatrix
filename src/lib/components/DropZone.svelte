@@ -1,5 +1,7 @@
 <script lang="ts">
-  import { openFileDialog } from "../api";
+  import { onMount, onDestroy } from "svelte";
+  import type { UnlistenFn } from "@tauri-apps/api/event";
+  import { openFileDialog, listenForFileDrop, type FileFilter } from "../api";
 
   interface Props {
     accept?: string;
@@ -10,6 +12,37 @@
   let { accept = "", multiple = false, onfiles }: Props = $props();
 
   let dragging = $state(false);
+  let unlistenDrop: UnlistenFn | undefined;
+
+  onMount(async () => {
+    unlistenDrop = await listenForFileDrop((paths) => {
+      // Filter out files that don't match the accept string
+      const extensions = accept
+        ? accept.split(",").map((s) => s.trim().replace(".", "").toLowerCase())
+        : [];
+        
+      let validPaths = paths;
+      if (extensions.length > 0) {
+        validPaths = paths.filter((p) => {
+           const ext = p.split('.').pop()?.toLowerCase() || "";
+           return extensions.includes(ext);
+        });
+      }
+
+      if (!multiple && validPaths.length > 1) {
+        validPaths = [validPaths[0]];
+      }
+
+      if (validPaths.length > 0) {
+        onfiles(validPaths);
+      }
+      dragging = false;
+    });
+  });
+
+  onDestroy(() => {
+    if (unlistenDrop) unlistenDrop();
+  });
 
   function handleDragOver(e: DragEvent) {
     e.preventDefault();
@@ -23,17 +56,7 @@
   function handleDrop(e: DragEvent) {
     e.preventDefault();
     dragging = false;
-    if (e.dataTransfer?.files) {
-      const paths: string[] = [];
-      for (const file of e.dataTransfer.files) {
-        if ((file as unknown as { path?: string }).path) {
-          paths.push((file as unknown as { path: string }).path);
-        }
-      }
-      if (paths.length > 0) {
-        onfiles(paths);
-      }
-    }
+    // Note: Actual payload paths are captured by Tauri's native onDragDropEvent in onMount
   }
 
   async function handleBrowse() {
