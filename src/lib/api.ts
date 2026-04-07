@@ -102,6 +102,8 @@ export async function listenToProgress(
   });
 }
 
+import { readFiles } from "tauri-plugin-clipboard-next-api";
+
 /**
  * Listens for native OS file drop events on the Tauri window.
  * Returns the absolute paths of the dropped files.
@@ -142,4 +144,30 @@ export async function listenForFileDrop(
     unlisten3();
     unlisten4();
   };
+}
+
+/**
+ * Reads file paths copied to the system clipboard (Ctrl+V).
+ */
+export async function getFilesFromClipboard(): Promise<string[]> {
+  try {
+    const result = await readFiles();
+    if (!result || !result.files || result.files.length === 0) return [];
+
+    // Normalize potential URI paths (file:///C:/...)
+    return result.files.map((fileItem) => {
+      let path = fileItem.path;
+      if (path.startsWith("file://")) {
+        path = decodeURI(path.replace("file://", ""));
+        // Handle windows drive letter `/C:/` -> `C:/`
+        if (path.match(/^\/[A-Za-z]:\//)) {
+          path = path.slice(1);
+        }
+      }
+      return path;
+    });
+  } catch (e) {
+    console.warn("Failed to read files from clipboard:", e);
+    return [];
+  }
 }

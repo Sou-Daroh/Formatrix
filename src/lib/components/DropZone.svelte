@@ -1,7 +1,12 @@
 <script lang="ts">
   import { onMount, onDestroy } from "svelte";
   import type { UnlistenFn } from "@tauri-apps/api/event";
-  import { openFileDialog, listenForFileDrop, type FileFilter } from "../api";
+  import {
+    openFileDialog,
+    listenForFileDrop,
+    getFilesFromClipboard,
+    type FileFilter,
+  } from "../api";
 
   interface Props {
     accept?: string;
@@ -14,28 +19,31 @@
   let dragging = $state(false);
   let unlistenDrop: UnlistenFn | undefined;
 
+  function processPaths(paths: string[]) {
+    const extensions = accept
+      ? accept.split(",").map((s) => s.trim().replace(".", "").toLowerCase())
+      : [];
+
+    let validPaths = paths;
+    if (extensions.length > 0) {
+      validPaths = paths.filter((p) => {
+        const ext = p.split(".").pop()?.toLowerCase() || "";
+        return extensions.includes(ext);
+      });
+    }
+
+    if (!multiple && validPaths.length > 1) {
+      validPaths = [validPaths[0]];
+    }
+
+    if (validPaths.length > 0) {
+      onfiles(validPaths);
+    }
+  }
+
   onMount(async () => {
     unlistenDrop = await listenForFileDrop((paths) => {
-      // Filter out files that don't match the accept string
-      const extensions = accept
-        ? accept.split(",").map((s) => s.trim().replace(".", "").toLowerCase())
-        : [];
-        
-      let validPaths = paths;
-      if (extensions.length > 0) {
-        validPaths = paths.filter((p) => {
-           const ext = p.split('.').pop()?.toLowerCase() || "";
-           return extensions.includes(ext);
-        });
-      }
-
-      if (!multiple && validPaths.length > 1) {
-        validPaths = [validPaths[0]];
-      }
-
-      if (validPaths.length > 0) {
-        onfiles(validPaths);
-      }
+      processPaths(paths);
       dragging = false;
     });
   });
@@ -43,6 +51,14 @@
   onDestroy(() => {
     if (unlistenDrop) unlistenDrop();
   });
+
+  async function handlePaste(e: ClipboardEvent) {
+    const paths = await getFilesFromClipboard();
+    if (paths && paths.length > 0) {
+      e.preventDefault();
+      processPaths(paths);
+    }
+  }
 
   function handleDragOver(e: DragEvent) {
     e.preventDefault();
@@ -77,6 +93,8 @@
   }
 </script>
 
+<svelte:window onpaste={handlePaste} />
+
 <div
   class="dropzone"
   class:dragging
@@ -89,10 +107,19 @@
   onkeydown={(e) => e.key === "Enter" && handleBrowse()}
 >
   <div class="dropzone-icon">
-    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-      <polyline points="17 8 12 3 7 8"/>
-      <line x1="12" y1="3" x2="12" y2="15"/>
+    <svg
+      width="32"
+      height="32"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.5"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+      <polyline points="17 8 12 3 7 8" />
+      <line x1="12" y1="3" x2="12" y2="15" />
     </svg>
   </div>
   <p class="dropzone-text">
@@ -128,7 +155,9 @@
   }
 
   .dropzone:focus-visible {
-    box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent-border);
+    box-shadow:
+      0 0 0 2px var(--bg),
+      0 0 0 4px var(--accent-border);
   }
 
   .dropzone.dragging {
