@@ -30,6 +30,7 @@ export default [
   {
     files: ["src/**/*.svelte"],
     languageOptions: {
+      globals: globals.browser,
       parser: svelteParser,
       parserOptions: {
         parser: tsParser,
@@ -44,6 +45,8 @@ export default [
     rules: {
       ...svelte.configs.recommended.rules,
       "@typescript-eslint/no-explicit-any": "error",
+      "no-unused-vars": "off",
+      "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
     },
   },
   {
