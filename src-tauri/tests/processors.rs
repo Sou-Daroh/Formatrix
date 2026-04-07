@@ -11,9 +11,7 @@ fn fixture(name: &str) -> String {
 /// Helper: create a tiny 4x4 red PNG for image tests.
 fn create_test_image() -> String {
     let path = fixture("test_img.png");
-    let img = image::ImageBuffer::from_fn(100, 80, |_x, _y| {
-        image::Rgba([220u8, 120, 50, 255])
-    });
+    let img = image::ImageBuffer::from_fn(100, 80, |_x, _y| image::Rgba([220u8, 120, 50, 255]));
     img.save(&path).expect("failed to save test image");
     path
 }
@@ -178,7 +176,10 @@ fn test_pdf_merge() {
     // Create two minimal PDFs
     fn create_minimal_pdf(filename: &str) -> String {
         let path = fixture(filename);
-        let content = Stream::new(dictionary! {}, b"BT /F1 12 Tf 100 700 Td (Page) Tj ET".to_vec());
+        let content = Stream::new(
+            dictionary! {},
+            b"BT /F1 12 Tf 100 700 Td (Page) Tj ET".to_vec(),
+        );
 
         let mut doc = Document::with_version("1.5");
         let content_id = doc.add_object(content);
