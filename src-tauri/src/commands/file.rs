@@ -1,7 +1,7 @@
+use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use tauri::AppHandle;
 use tauri_plugin_dialog::DialogExt;
-use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct FileFilter {
@@ -25,8 +25,13 @@ pub async fn open_file_dialog(
 
         if multiple {
             if let Some(paths) = builder.blocking_pick_files() {
-                paths.into_iter()
-                    .filter_map(|p| p.into_path().ok().and_then(|p| p.to_str().map(|s| s.to_string())))
+                paths
+                    .into_iter()
+                    .filter_map(|p| {
+                        p.into_path()
+                            .ok()
+                            .and_then(|p| p.to_str().map(|s| s.to_string()))
+                    })
                     .collect()
             } else {
                 Vec::new()
