@@ -29,22 +29,26 @@ export interface PdfSplitOptions {
   pages: string; // e.g. "1,3,5-7"
 }
 
+export interface FileFilter {
+  name: string;
+  extensions: string[];
+}
+
 // --- API Functions ---
 
 // File Dialogs
+/**
+ * Opens a native file dialog.
+ */
 export async function openFileDialog(
-  multiple: boolean = false,
-  filters: Array<[string, string[]]> = [],
+  multiple: boolean,
+  filters: FileFilter[],
 ): Promise<string[]> {
-  const formattedFilters = filters.map(([name, exts]) => ({
-    name,
-    extensions: exts,
-  }));
-  // Wrap into correct tuple expected by backend args
-  return invoke<string[]>("open_file_dialog", {
+  const result = await invoke<string[]>("open_file_dialog", {
     multiple,
-    filters: formattedFilters,
+    filters,
   });
+  return result;
 }
 
 export async function saveOutputFile(

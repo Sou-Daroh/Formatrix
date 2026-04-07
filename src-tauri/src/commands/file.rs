@@ -1,59 +1,49 @@
 use std::path::PathBuf;
 use tauri::AppHandle;
 use tauri_plugin_dialog::DialogExt;
+use serde::{Deserialize, Serialize};
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct FileFilter {
+    pub name: String,
+    pub extensions: Vec<String>,
+}
 
 /// Opens a file dialog and returns selected paths.
 #[tauri::command]
 pub async fn open_file_dialog(
     app: AppHandle,
     multiple: bool,
-    filters: Vec<(&str, Vec<&str>)>,
+    filters: Vec<FileFilter>,
 ) -> Result<Vec<String>, String> {
-    let (tx, rx) = std::sync::mpsc::channel();
+    let result = tokio::task::spawn_blocking(move || {
+        let mut builder = app.dialog().file();
+        for filter in filters {
+            let ext_refs: Vec<&str> = filter.extensions.iter().map(|s| s.as_str()).collect();
+            builder = builder.add_filter(filter.name, &ext_refs);
+        }
 
-    let mut dialog = app.dialog().file();
-    for (name, extensions) in filters {
-        dialog = dialog.add_filter(name, &extensions);
-    }
-
-    if multiple {
-        dialog.pick_files(move |file_paths| {
-            let paths = match file_paths {
-                Some(paths) => paths
-                    .into_iter()
-                    .filter_map(|p| {
-                        p.into_path()
-                            .ok()
-                            .and_then(|p| p.to_str().map(|s| s.to_string()))
-                    })
-                    .collect::<Vec<String>>(),
-                None => Vec::new(),
-            };
-            tx.send(paths).unwrap();
-        });
-    } else {
-        dialog.pick_file(move |file_path| {
-            let paths = match file_path {
-                Some(path) => {
-                    if let Ok(p) = path.into_path() {
-                        if let Some(s) = p.to_str() {
-                            vec![s.to_string()]
-                        } else {
-                            Vec::new()
-                        }
-                    } else {
-                        Vec::new()
+        if multiple {
+            if let Some(paths) = builder.blocking_pick_files() {
+                paths.into_iter()
+                    .filter_map(|p| p.into_path().ok().and_then(|p| p.to_str().map(|s| s.to_string())))
+                    .collect()
+            } else {
+                Vec::new()
+            }
+        } else {
+            if let Some(path) = builder.blocking_pick_file() {
+                if let Ok(p) = path.into_path() {
+                    if let Some(s) = p.to_str() {
+                        return vec![s.to_string()];
                     }
                 }
-                None => Vec::new(),
-            };
-            tx.send(paths).unwrap();
-        });
-    }
-
-    let result = tokio::task::spawn_blocking(move || rx.recv().unwrap_or_default())
-        .await
-        .map_err(|e| format!("thread panic: {}", e))?;
+            }
+            Vec::new()
+        }
+    })
+    .await
+    .map_err(|e| format!("thread panic: {}", e))?;
 
     Ok(result)
 }
@@ -65,18 +55,14 @@ pub async fn save_output_file(
     temp_path_str: String,
     suggested_name: String,
 ) -> Result<String, String> {
-    let (tx, rx) = std::sync::mpsc::channel();
-
-    app.dialog()
-        .file()
-        .set_file_name(&suggested_name)
-        .save_file(move |file_path| {
-            tx.send(file_path).unwrap();
-        });
-
-    let selected_path = tokio::task::spawn_blocking(move || rx.recv().unwrap_or_default())
-        .await
-        .map_err(|e| format!("thread panic: {}", e))?;
+    let selected_path = tokio::task::spawn_blocking(move || {
+        app.dialog()
+            .file()
+            .set_file_name(&suggested_name)
+            .blocking_save_file()
+    })
+    .await
+    .map_err(|e| format!("thread panic: {}", e))?;
 
     if let Some(dst_path) = selected_path {
         let dst_buf: PathBuf = dst_path

@@ -37,15 +37,19 @@
   }
 
   async function handleBrowse() {
-    const extensions = accept
-      ? accept.split(",").map((s) => s.trim().replace(".", ""))
-      : [];
-    const filters: Array<[string, string[]]> = extensions.length
-      ? [["Supported Files", extensions]]
-      : [];
-    const paths = await openFileDialog(multiple, filters);
-    if (paths.length > 0) {
-      onfiles(paths);
+    try {
+      const extensions = accept
+        ? accept.split(",").map((s) => s.trim().replace(".", ""))
+        : [];
+      const filters = extensions.length
+        ? [{ name: "Supported Files", extensions }]
+        : [];
+      const paths = await openFileDialog(multiple, filters);
+      if (paths.length > 0) {
+        onfiles(paths);
+      }
+    } catch (e) {
+      alert("Error opening dialog: " + String(e));
     }
   }
 </script>
