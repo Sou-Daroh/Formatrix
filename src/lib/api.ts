@@ -115,17 +115,26 @@ export async function listenForFileDrop(
     }
   });
 
-  const unlisten2 = await listen<{ paths: string[] }>("tauri://drag-drop", (event) => {
-    if (event.payload && event.payload.paths) callback(event.payload.paths);
-  });
+  const unlisten2 = await listen<{ paths: string[] }>(
+    "tauri://drag-drop",
+    (event) => {
+      if (event.payload && event.payload.paths) callback(event.payload.paths);
+    },
+  );
 
-  const unlisten3 = await listen<{ paths: string[] }>("tauri://drop", (event) => {
-    if (event.payload && event.payload.paths) callback(event.payload.paths);
-  });
-  
-  const unlisten4 = await listen<{ paths: string[] }>("tauri://file-drop", (event) => {
-    if (event.payload && event.payload.paths) callback(event.payload.paths);
-  });
+  const unlisten3 = await listen<{ paths: string[] }>(
+    "tauri://drop",
+    (event) => {
+      if (event.payload && event.payload.paths) callback(event.payload.paths);
+    },
+  );
+
+  const unlisten4 = await listen<{ paths: string[] }>(
+    "tauri://file-drop",
+    (event) => {
+      if (event.payload && event.payload.paths) callback(event.payload.paths);
+    },
+  );
 
   return () => {
     unlisten1();
