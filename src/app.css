@@ -2,6 +2,43 @@
    Formatrix Design System
    ============================================ */
 
+/* --- Self-hosted Fonts --- */
+@font-face {
+  font-family: "DM Sans";
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  src: url("/fonts/dm-sans-400.woff2") format("woff2");
+}
+@font-face {
+  font-family: "DM Sans";
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+  src: url("/fonts/dm-sans-500.woff2") format("woff2");
+}
+@font-face {
+  font-family: "DM Sans";
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+  src: url("/fonts/dm-sans-600.woff2") format("woff2");
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  src: url("/fonts/ibm-plex-mono-400.woff2") format("woff2");
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+  src: url("/fonts/ibm-plex-mono-500.woff2") format("woff2");
+}
+
 /* --- Tokens --- */
 :root {
   /* Surfaces */
