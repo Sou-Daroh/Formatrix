@@ -9,8 +9,8 @@ fn fixture(name: &str) -> String {
 }
 
 /// Helper: create a tiny 4x4 red PNG for image tests.
-fn create_test_image() -> String {
-    let path = fixture("test_img.png");
+fn create_test_image(name: &str) -> String {
+    let path = fixture(name);
     let img = image::ImageBuffer::from_fn(100, 80, |_x, _y| image::Rgba([220u8, 120, 50, 255]));
     img.save(&path).expect("failed to save test image");
     path
@@ -21,7 +21,7 @@ fn create_test_image() -> String {
 // =========================================================
 #[test]
 fn test_image_resize() {
-    let input = create_test_image();
+    let input = create_test_image("test_img_resize.png");
     let options = formatrix_lib::processor::ImageOptions {
         width: 50,
         height: 0,
@@ -48,7 +48,7 @@ fn test_image_resize() {
 
 #[test]
 fn test_image_format_conversion() {
-    let input = create_test_image();
+    let input = create_test_image("test_img_format.png");
     let options = formatrix_lib::processor::ImageOptions {
         width: 0,
         height: 0,
