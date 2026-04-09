@@ -5,16 +5,16 @@
     openFileDialog,
     listenForFileDrop,
     getFilesFromClipboard,
-    type FileFilter,
   } from "../api";
 
   interface Props {
     accept?: string;
+    hint?: string;
     multiple?: boolean;
     onfiles: (paths: string[]) => void;
   }
 
-  let { accept = "", multiple = false, onfiles }: Props = $props();
+  let { accept = "", hint = "", multiple = false, onfiles }: Props = $props();
 
   let dragging = $state(false);
   let pasteEmpty = $state(false);
@@ -137,8 +137,8 @@
       <span class="dropzone-highlight">Ctrl+V</span> to paste
     </p>
   {/if}
-  {#if accept}
-    <p class="dropzone-hint mono">{accept}</p>
+  {#if hint || accept}
+    <p class="dropzone-hint mono">{hint || accept}</p>
   {/if}
 </div>
 

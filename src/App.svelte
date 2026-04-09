@@ -50,6 +50,7 @@
     description: string;
     icon: string;
     accept: string;
+    hint: string;
     multiple: boolean;
   }> = [
     {
@@ -58,6 +59,7 @@
       description: "Resize, compress, and convert images",
       icon: "🖼",
       accept: ".jpg,.jpeg,.png,.webp,.bmp,.gif",
+      hint: "Supports JPG, PNG, WebP, GIF, BMP",
       multiple: false,
     },
     {
@@ -66,6 +68,7 @@
       description: "Convert CSV spreadsheets to JSON",
       icon: "📊",
       accept: ".csv",
+      hint: "CSV files only",
       multiple: false,
     },
     {
@@ -74,6 +77,7 @@
       description: "Pull selectable text from PDF documents",
       icon: "📄",
       accept: ".pdf",
+      hint: "PDF files only",
       multiple: false,
     },
     {
@@ -82,6 +86,7 @@
       description: "Combine multiple PDFs into one document",
       icon: "📑",
       accept: ".pdf",
+      hint: "Select 2 or more PDF files",
       multiple: true,
     },
     {
@@ -90,6 +95,7 @@
       description: "Split a PDF by page ranges into a ZIP",
       icon: "✂️",
       accept: ".pdf",
+      hint: "PDF files only",
       multiple: false,
     },
   ];
@@ -262,6 +268,7 @@
           <div class="configure-files">
             <DropZone
               accept={currentOp.accept}
+              hint={currentOp.hint}
               multiple={currentOp.multiple}
               onfiles={handleFiles}
             />
