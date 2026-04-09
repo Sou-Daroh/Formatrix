@@ -135,9 +135,28 @@
   }
 
   function goBack() {
+    if (files.length > 0) {
+      if (
+        !confirm("You have files staged. Are you sure you want to go back?")
+      ) {
+        return;
+      }
+    }
     step = "choose";
     selectedOp = null;
     files = [];
+  }
+
+  function handleKeydown(e: KeyboardEvent) {
+    if (
+      e.key === "Enter" &&
+      (e.ctrlKey || e.metaKey) &&
+      step === "configure" &&
+      canProcess
+    ) {
+      e.preventDefault();
+      handleProcess();
+    }
   }
 
   async function handleProcess() {
@@ -202,6 +221,8 @@
   }
 </script>
 
+<svelte:window onkeydown={handleKeydown} />
+
 <div class="app-shell">
   <!-- Header -->
   <header class="app-header">
@@ -238,99 +259,105 @@
 
   <!-- Main Content -->
   <main class="app-main">
-    <!-- Step 1: Choose Operation -->
-    {#if step === "choose"}
-      <div class="choose-view animate-fade-in">
-        <div class="choose-header">
-          <h1 class="choose-title">What do you need?</h1>
-          <p class="choose-subtitle text-muted">
-            Choose an operation to get started. All processing happens locally.
-          </p>
-        </div>
-        <div class="operation-grid stagger">
-          {#each operations as op}
-            <OperationCard
-              title={op.title}
-              description={op.description}
-              icon={op.icon}
-              active={selectedOp === op.type}
-              onclick={() => selectOperation(op.type)}
-            />
-          {/each}
-        </div>
-      </div>
-
-      <!-- Step 2: Configure & Drop Files -->
-    {:else if step === "configure" && currentOp}
-      <div class="configure-view animate-fade-in">
-        <div class="configure-layout">
-          <!-- Left: Files -->
-          <div class="configure-files">
-            <DropZone
-              accept={currentOp.accept}
-              hint={currentOp.hint}
-              multiple={currentOp.multiple}
-              onfiles={handleFiles}
-            />
-            <FileList {files} onremove={removeFile} />
-          </div>
-          <!-- Right: Options -->
-          <div class="configure-options">
-            <div class="options-header">
-              <h2 class="options-title">Options</h2>
+    {#key step}
+      <div class="step-container animate-fade-in">
+        <!-- Step 1: Choose Operation -->
+        {#if step === "choose"}
+          <div class="choose-view">
+            <div class="choose-header">
+              <h1 class="choose-title">What do you need?</h1>
+              <p class="choose-subtitle text-muted">
+                Choose an operation to get started. All processing happens
+                locally.
+              </p>
             </div>
-            <OptionsPanel
-              taskType={currentOp.type}
-              imageOptions={imageOpts}
-              csvOptions={csvOpts}
-              pdfSplitOptions={splitOpts}
-            />
+            <div class="operation-grid stagger">
+              {#each operations as op}
+                <OperationCard
+                  title={op.title}
+                  description={op.description}
+                  icon={op.icon}
+                  active={selectedOp === op.type}
+                  onclick={() => selectOperation(op.type)}
+                />
+              {/each}
+            </div>
           </div>
-        </div>
-        <div class="configure-footer">
-          <button
-            class="btn btn-primary btn-lg process-btn"
-            disabled={!canProcess}
-            onclick={handleProcess}
-            type="button"
-          >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <polygon points="5 3 19 12 5 21 5 3" />
-            </svg>
-            Process{#if selectedOp === "pdf_merge"}
-              ({files.length} files){/if}
-          </button>
-        </div>
-      </div>
 
-      <!-- Step 3: Processing -->
-    {:else if step === "processing"}
-      <div class="processing-view animate-fade-in">
-        <div class="processing-card">
-          <div class="processing-spinner"></div>
-          <h2 class="processing-title">Processing…</h2>
-          <ProgressBar percent={progress} stage={progressStage} />
-        </div>
-      </div>
+          <!-- Step 2: Configure & Drop Files -->
+        {:else if step === "configure" && currentOp}
+          <div class="configure-view">
+            <div class="configure-layout">
+              <!-- Left: Files -->
+              <div class="configure-files">
+                <DropZone
+                  accept={currentOp.accept}
+                  hint={currentOp.hint}
+                  multiple={currentOp.multiple}
+                  onfiles={handleFiles}
+                />
+                <FileList {files} onremove={removeFile} />
+              </div>
+              <!-- Right: Options -->
+              <div class="configure-options">
+                <div class="options-header">
+                  <h2 class="options-title">Options</h2>
+                </div>
+                <OptionsPanel
+                  taskType={currentOp.type}
+                  imageOptions={imageOpts}
+                  csvOptions={csvOpts}
+                  pdfSplitOptions={splitOpts}
+                />
+              </div>
+            </div>
+            <div class="configure-footer">
+              <button
+                class="btn btn-primary btn-lg process-btn"
+                disabled={!canProcess}
+                onclick={handleProcess}
+                type="button"
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <polygon points="5 3 19 12 5 21 5 3" />
+                </svg>
+                Process{#if selectedOp === "pdf_merge"}
+                  ({files.length} files){/if}
+              </button>
+              <span class="shortcut-hint mono text-dim">Ctrl + Enter</span>
+            </div>
+          </div>
 
-      <!-- Step 4: Result -->
-    {:else if step === "result"}
-      <ResultView
-        {result}
-        {error}
-        onreset={resetAll}
-        onprocessanother={processAnother}
-      />
-    {/if}
+          <!-- Step 3: Processing -->
+        {:else if step === "processing"}
+          <div class="processing-view">
+            <div class="processing-card">
+              <div class="processing-spinner"></div>
+              <h2 class="processing-title">Processing…</h2>
+              <ProgressBar percent={progress} stage={progressStage} />
+            </div>
+          </div>
+
+          <!-- Step 4: Result -->
+        {:else if step === "result"}
+          <ResultView
+            {result}
+            {error}
+            onreset={resetAll}
+            onprocessanother={processAnother}
+          />
+        {/if}
+      </div>
+    {/key}
   </main>
 
   <!-- Footer -->
@@ -400,6 +427,14 @@
     align-items: center;
     justify-content: center;
     padding: var(--space-xl);
+  }
+
+  .step-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
   }
 
   /* --- Footer --- */
@@ -496,7 +531,9 @@
 
   .configure-footer {
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-sm);
   }
 
   .process-btn {
@@ -507,6 +544,10 @@
     opacity: 0.4;
     cursor: not-allowed;
     transform: none;
+  }
+
+  .shortcut-hint {
+    font-size: 11px;
   }
 
   /* --- Processing View --- */
