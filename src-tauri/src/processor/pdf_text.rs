@@ -22,9 +22,14 @@ pub fn process(input_path: &str) -> Result<ProcessResult, String> {
         .ok_or("could not convert output path to string")?
         .to_string();
 
+    let input_stem = std::path::Path::new(input_path)
+        .file_stem()
+        .and_then(|s| s.to_str())
+        .unwrap_or("output");
+
     Ok(ProcessResult {
         output_path: output_path_str,
-        output_name: "output.txt".to_string(),
+        output_name: format!("{}.txt", input_stem),
         output_mime: "text/plain".to_string(),
     })
 }

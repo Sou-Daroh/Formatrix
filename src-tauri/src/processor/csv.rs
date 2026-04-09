@@ -45,9 +45,14 @@ pub fn process(input_path: &str, options: &CsvOptions) -> Result<ProcessResult, 
         .ok_or("could not convert output path to string")?
         .to_string();
 
+    let input_stem = std::path::Path::new(input_path)
+        .file_stem()
+        .and_then(|s| s.to_str())
+        .unwrap_or("output");
+
     Ok(ProcessResult {
         output_path: output_path_str,
-        output_name: "output.json".to_string(),
+        output_name: format!("{}.json", input_stem),
         output_mime: "application/json".to_string(),
     })
 }

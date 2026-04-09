@@ -70,9 +70,15 @@ pub fn process(input_path: &str, options: &ImageOptions) -> Result<ProcessResult
         .ok_or("could not convert output path to string")?
         .to_string();
 
+    // Derive output name from input filename
+    let input_stem = std::path::Path::new(input_path)
+        .file_stem()
+        .and_then(|s| s.to_str())
+        .unwrap_or("output");
+
     Ok(ProcessResult {
         output_path: output_path_str,
-        output_name: format!("output.{}", ext),
+        output_name: format!("{}.{}", input_stem, ext),
         output_mime: format!("image/{}", ext),
     })
 }
