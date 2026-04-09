@@ -423,13 +423,16 @@
 
   .header-left,
   .header-right {
-    width: 120px;
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
     -webkit-app-region: no-drag;
   }
 
   .header-right {
-    display: flex;
     justify-content: flex-end;
+    white-space: nowrap;
   }
 
   .header-brand {
