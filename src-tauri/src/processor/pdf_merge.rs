@@ -113,10 +113,15 @@ pub fn merge(input_paths: &[String]) -> Result<ProcessResult, String> {
         .ok_or("could not convert output path to string")?
         .to_string();
 
+    let output_size = std::fs::metadata(&output_path)
+        .map(|m| m.len())
+        .unwrap_or(0);
+
     Ok(ProcessResult {
         output_path: output_path_str,
         output_name: "merged.pdf".to_string(),
         output_mime: "application/pdf".to_string(),
+        output_size,
     })
 }
 
@@ -190,10 +195,13 @@ pub fn split(input_path: &str, options: &PdfSplitOptions) -> Result<ProcessResul
         .ok_or("could not convert output path to string")?
         .to_string();
 
+    let output_size = std::fs::metadata(&zip_path).map(|m| m.len()).unwrap_or(0);
+
     Ok(ProcessResult {
         output_path: output_path_str,
         output_name: "split.zip".to_string(),
         output_mime: "application/zip".to_string(),
+        output_size,
     })
 }
 

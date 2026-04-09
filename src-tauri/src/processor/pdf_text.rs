@@ -27,9 +27,14 @@ pub fn process(input_path: &str) -> Result<ProcessResult, String> {
         .and_then(|s| s.to_str())
         .unwrap_or("output");
 
+    let output_size = std::fs::metadata(&output_path)
+        .map(|m| m.len())
+        .unwrap_or(0);
+
     Ok(ProcessResult {
         output_path: output_path_str,
         output_name: format!("{}.txt", input_stem),
         output_mime: "text/plain".to_string(),
+        output_size,
     })
 }

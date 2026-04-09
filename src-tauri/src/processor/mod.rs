@@ -11,6 +11,7 @@ pub struct ProcessResult {
     pub output_path: String,
     pub output_name: String,
     pub output_mime: String,
+    pub output_size: u64,
 }
 
 /// Options for image resize and compress.
