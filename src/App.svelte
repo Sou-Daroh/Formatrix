@@ -12,6 +12,7 @@
     processPdfMerge,
     processPdfSplit,
     listenToProgress,
+    getFileSize,
   } from "./lib/api";
   import type {
     ProcessResult,
@@ -28,6 +29,7 @@
   let step = $state<AppStep>("choose");
   let selectedOp = $state<TaskType | null>(null);
   let files = $state<string[]>([]);
+  let fileSizes = $state<Record<string, number>>({});
   let progress = $state(0);
   let progressStage = $state("Preparing...");
   let result = $state<ProcessResult | undefined>(undefined);
@@ -120,18 +122,31 @@
     step = "configure";
   }
 
-  function handleFiles(paths: string[]) {
+  async function handleFiles(paths: string[]) {
+    let targetPaths = paths;
     if (currentOp?.multiple) {
       // Deduplicate: only add paths not already in the queue
       const newPaths = paths.filter((p) => !files.includes(p));
       files = [...files, ...newPaths];
+      targetPaths = newPaths;
     } else {
       files = paths.slice(0, 1);
+      targetPaths = files;
+    }
+
+    // Fetch sizes for new files
+    for (const p of targetPaths) {
+      const size = await getFileSize(p);
+      fileSizes[p] = size;
     }
   }
 
   function removeFile(index: number) {
+    const path = files[index];
     files = files.filter((_, i) => i !== index);
+    const newSizes = { ...fileSizes };
+    delete newSizes[path];
+    fileSizes = newSizes;
   }
 
   function goBack() {
@@ -145,6 +160,7 @@
     step = "choose";
     selectedOp = null;
     files = [];
+    fileSizes = {};
   }
 
   function handleKeydown(e: KeyboardEvent) {
@@ -206,6 +222,7 @@
     step = "choose";
     selectedOp = null;
     files = [];
+    fileSizes = {};
     result = undefined;
     error = "";
     progress = 0;
@@ -213,6 +230,7 @@
 
   function processAnother() {
     files = [];
+    fileSizes = {};
     result = undefined;
     error = "";
     progress = 0;
@@ -296,7 +314,7 @@
                   multiple={currentOp.multiple}
                   onfiles={handleFiles}
                 />
-                <FileList {files} onremove={removeFile} />
+                <FileList {files} sizes={fileSizes} onremove={removeFile} />
               </div>
               <!-- Right: Options -->
               <div class="configure-options">

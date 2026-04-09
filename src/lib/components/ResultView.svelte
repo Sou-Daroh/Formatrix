@@ -34,6 +34,14 @@
       saving = false;
     }
   }
+
+  function formatSize(bytes: number): string {
+    if (!bytes) return "0 B";
+    const k = 1024;
+    const units = ["B", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + units[i];
+  }
 </script>
 
 <div class="result-view animate-fade-in-up">
@@ -88,6 +96,11 @@
         <div class="result-row">
           <span class="result-label">Type</span>
           <span class="result-value mono">{result.output_mime}</span>
+        </div>
+        <div class="result-row">
+          <span class="result-label">Size</span>
+          <span class="result-value mono">{formatSize(result.output_size)}</span
+          >
         </div>
       </div>
 
