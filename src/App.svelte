@@ -123,21 +123,34 @@
   }
 
   async function handleFiles(paths: string[]) {
-    let targetPaths: string[];
-    if (currentOp?.multiple) {
-      // Deduplicate: only add paths not already in the queue
-      const newPaths = paths.filter((p) => !files.includes(p));
-      files = [...files, ...newPaths];
-      targetPaths = newPaths;
-    } else {
-      files = paths.slice(0, 1);
-      targetPaths = files;
+    const maxBytes = 1024 * 1024 * 1024; // 1 GB limit
+    let validPaths: string[] = [];
+    let rejectedCount = 0;
+
+    for (const p of paths) {
+      const size = await getFileSize(p);
+      if (size > maxBytes) {
+        rejectedCount++;
+      } else {
+        validPaths.push(p);
+        fileSizes[p] = size;
+      }
     }
 
-    // Fetch sizes for new files
-    for (const p of targetPaths) {
-      const size = await getFileSize(p);
-      fileSizes[p] = size;
+    if (rejectedCount > 0) {
+      alert(
+        `Skipped ${rejectedCount} file(s) because they exceed the 1 GB limit.`,
+      );
+    }
+
+    if (validPaths.length === 0) return;
+
+    if (currentOp?.multiple) {
+      // Deduplicate: only add paths not already in the queue
+      const newPaths = validPaths.filter((p) => !files.includes(p));
+      files = [...files, ...newPaths];
+    } else {
+      files = validPaths.slice(0, 1);
     }
   }
 
