@@ -185,6 +185,15 @@
     error = "";
     progress = 0;
   }
+
+  function processAnother() {
+    files = [];
+    result = undefined;
+    error = "";
+    progress = 0;
+    progressStage = "Preparing...";
+    step = "configure";
+  }
 </script>
 
 <div class="app-shell">
@@ -308,7 +317,12 @@
 
       <!-- Step 4: Result -->
     {:else if step === "result"}
-      <ResultView {result} {error} onreset={resetAll} />
+      <ResultView
+        {result}
+        {error}
+        onreset={resetAll}
+        onprocessanother={processAnother}
+      />
     {/if}
   </main>
 

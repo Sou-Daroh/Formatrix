@@ -6,9 +6,10 @@
     result?: ProcessResult;
     error?: string;
     onreset: () => void;
+    onprocessanother?: () => void;
   }
 
-  let { result, error, onreset }: Props = $props();
+  let { result, error, onreset, onprocessanother }: Props = $props();
 
   let saving = $state(false);
   let saved = $state(false);
@@ -125,8 +126,13 @@
             {/if}
           </button>
         {/if}
+        {#if onprocessanother}
+          <button class="btn btn-lg" onclick={onprocessanother} type="button">
+            Process Another
+          </button>
+        {/if}
         <button class="btn btn-lg" onclick={onreset} type="button">
-          Process Another
+          Change Operation
         </button>
       </div>
     </div>
