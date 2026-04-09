@@ -64,7 +64,7 @@ formatrix/
 │   └── app.css             # Global styles
 ├── src-tauri/              # Rust backend
 │   ├── src/
-│   │   ├── main.rs         # Tauri entry point
+│   │   ├── lib.rs          # Tauri entry point
 │   │   ├── commands/       # IPC command handlers
 │   │   └── processor/      # One module per operation
 │   ├── Cargo.toml
