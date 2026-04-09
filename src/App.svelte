@@ -34,7 +34,12 @@
   let error = $state("");
 
   // --- Options State ---
-  let imageOpts = $state<ImageOptions>({ width: 0, height: 0, quality: 0, format: "" });
+  let imageOpts = $state<ImageOptions>({
+    width: 0,
+    height: 0,
+    quality: 0,
+    format: "",
+  });
   let csvOpts = $state<CsvOptions>({ pretty: true });
   let splitOpts = $state<PdfSplitOptions>({ pages: "" });
 
@@ -111,7 +116,9 @@
 
   function handleFiles(paths: string[]) {
     if (currentOp?.multiple) {
-      files = [...files, ...paths];
+      // Deduplicate: only add paths not already in the queue
+      const newPaths = paths.filter((p) => !files.includes(p));
+      files = [...files, ...newPaths];
     } else {
       files = paths.slice(0, 1);
     }
@@ -186,9 +193,18 @@
     <div class="header-left">
       {#if step !== "choose"}
         <button class="btn btn-ghost btn-sm" onclick={goBack} type="button">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="19" y1="12" x2="5" y2="12"/>
-            <polyline points="12 19 5 12 12 5"/>
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <line x1="19" y1="12" x2="5" y2="12" />
+            <polyline points="12 19 5 12 12 5" />
           </svg>
           Back
         </button>
@@ -207,13 +223,14 @@
 
   <!-- Main Content -->
   <main class="app-main">
-
     <!-- Step 1: Choose Operation -->
     {#if step === "choose"}
       <div class="choose-view animate-fade-in">
         <div class="choose-header">
           <h1 class="choose-title">What do you need?</h1>
-          <p class="choose-subtitle text-muted">Choose an operation to get started. All processing happens locally.</p>
+          <p class="choose-subtitle text-muted">
+            Choose an operation to get started. All processing happens locally.
+          </p>
         </div>
         <div class="operation-grid stagger">
           {#each operations as op}
@@ -228,7 +245,7 @@
         </div>
       </div>
 
-    <!-- Step 2: Configure & Drop Files -->
+      <!-- Step 2: Configure & Drop Files -->
     {:else if step === "configure" && currentOp}
       <div class="configure-view animate-fade-in">
         <div class="configure-layout">
@@ -239,7 +256,7 @@
               multiple={currentOp.multiple}
               onfiles={handleFiles}
             />
-            <FileList files={files} onremove={removeFile} />
+            <FileList {files} onremove={removeFile} />
           </div>
           <!-- Right: Options -->
           <div class="configure-options">
@@ -261,15 +278,25 @@
             onclick={handleProcess}
             type="button"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polygon points="5 3 19 12 5 21 5 3"/>
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <polygon points="5 3 19 12 5 21 5 3" />
             </svg>
-            Process{#if selectedOp === "pdf_merge"} ({files.length} files){/if}
+            Process{#if selectedOp === "pdf_merge"}
+              ({files.length} files){/if}
           </button>
         </div>
       </div>
 
-    <!-- Step 3: Processing -->
+      <!-- Step 3: Processing -->
     {:else if step === "processing"}
       <div class="processing-view animate-fade-in">
         <div class="processing-card">
@@ -279,15 +306,17 @@
         </div>
       </div>
 
-    <!-- Step 4: Result -->
+      <!-- Step 4: Result -->
     {:else if step === "result"}
-      <ResultView result={result} error={error} onreset={resetAll} />
+      <ResultView {result} {error} onreset={resetAll} />
     {/if}
   </main>
 
   <!-- Footer -->
   <footer class="app-footer">
-    <span class="footer-text mono text-dim">v1.0.0 · All processing is offline</span>
+    <span class="footer-text mono text-dim"
+      >v1.0.0 · All processing is offline</span
+    >
   </footer>
 </div>
 
