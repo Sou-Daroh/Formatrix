@@ -54,6 +54,7 @@ pub async fn open_file_dialog(
 }
 
 /// Saves an output file from temp dir to user-selected location.
+/// Cleans up the temp directory after successful copy.
 #[tauri::command]
 pub async fn save_output_file(
     app: AppHandle,
@@ -76,12 +77,29 @@ pub async fn save_output_file(
         std::fs::copy(&temp_path_str, &dst_buf)
             .map_err(|e| format!("failed to copy output file: {}", e))?;
 
+        // Clean up the temp directory that held this output
+        let temp_path = PathBuf::from(&temp_path_str);
+        if let Some(parent) = temp_path.parent() {
+            let _ = std::fs::remove_dir_all(parent);
+        }
+
         let out_str = dst_buf
             .to_str()
             .ok_or("invalid destination path".to_string())?
             .to_string();
         Ok(out_str)
     } else {
-        Err("user cancelled".to_string())
+        // User cancelled the dialog — not an error
+        Ok(String::new())
+    }
+}
+
+/// Removes all stale temp directories from previous sessions.
+/// Called on app startup.
+#[tauri::command]
+pub fn cleanup_temp_files() {
+    let temp_root = std::env::temp_dir().join("formatrix");
+    if temp_root.exists() {
+        let _ = std::fs::remove_dir_all(&temp_root);
     }
 }
