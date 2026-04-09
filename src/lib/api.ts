@@ -1,6 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
+import { readFiles } from "tauri-plugin-clipboard-next-api";
 
 // --- Shared Types ---
 export interface ProcessResult {
@@ -101,8 +102,6 @@ export async function listenToProgress(
     callback(event.payload);
   });
 }
-
-import { readFiles } from "tauri-plugin-clipboard-next-api";
 
 /**
  * Listens for native OS file drop events on the Tauri window.
