@@ -17,6 +17,7 @@
   let { accept = "", multiple = false, onfiles }: Props = $props();
 
   let dragging = $state(false);
+  let pasteEmpty = $state(false);
   let unlistenDrop: UnlistenFn | undefined;
 
   function processPaths(paths: string[]) {
@@ -57,6 +58,10 @@
     if (paths && paths.length > 0) {
       e.preventDefault();
       processPaths(paths);
+    } else {
+      // Brief visual feedback: no files found on clipboard
+      pasteEmpty = true;
+      setTimeout(() => (pasteEmpty = false), 1500);
     }
   }
 
@@ -98,6 +103,7 @@
 <div
   class="dropzone"
   class:dragging
+  class:paste-empty={pasteEmpty}
   role="button"
   tabindex="0"
   ondragover={handleDragOver}
@@ -122,9 +128,15 @@
       <line x1="12" y1="3" x2="12" y2="15" />
     </svg>
   </div>
-  <p class="dropzone-text">
-    <span class="dropzone-highlight">Click to browse</span> or drag files here
-  </p>
+  {#if pasteEmpty}
+    <p class="dropzone-text paste-msg">No files found on clipboard</p>
+  {:else}
+    <p class="dropzone-text">
+      <span class="dropzone-highlight">Click to browse</span>, drag files here,
+      or
+      <span class="dropzone-highlight">Ctrl+V</span> to paste
+    </p>
+  {/if}
   {#if accept}
     <p class="dropzone-hint mono">{accept}</p>
   {/if}
@@ -193,5 +205,34 @@
   .dropzone-hint {
     font-size: 11px;
     color: var(--text-3);
+  }
+
+  .dropzone.paste-empty {
+    border-color: var(--error);
+    animation: shake 0.4s ease-out;
+  }
+
+  .paste-msg {
+    color: var(--error) !important;
+    font-weight: 500;
+  }
+
+  @keyframes shake {
+    0%,
+    100% {
+      transform: translateX(0);
+    }
+    20% {
+      transform: translateX(-4px);
+    }
+    40% {
+      transform: translateX(4px);
+    }
+    60% {
+      transform: translateX(-3px);
+    }
+    80% {
+      transform: translateX(2px);
+    }
   }
 </style>
