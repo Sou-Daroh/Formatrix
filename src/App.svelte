@@ -123,7 +123,7 @@
   }
 
   async function handleFiles(paths: string[]) {
-    let targetPaths = paths;
+    let targetPaths: string[];
     if (currentOp?.multiple) {
       // Deduplicate: only add paths not already in the queue
       const newPaths = paths.filter((p) => !files.includes(p));

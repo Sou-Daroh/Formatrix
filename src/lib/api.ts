@@ -66,7 +66,7 @@ export async function getFileSize(path: string): Promise<number> {
   try {
     const fileStat = await stat(path);
     return fileStat.size || 0;
-  } catch (e) {
+  } catch {
     return 0;
   }
 }
