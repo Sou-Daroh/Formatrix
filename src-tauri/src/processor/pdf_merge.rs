@@ -1,10 +1,12 @@
-use super::{create_temp_dir, ProcessResult};
+use super::{create_temp_dir, ProcessError, ProcessResult};
 use lopdf::{Document, Object, ObjectId};
 use std::collections::BTreeMap;
 
-pub fn merge(input_paths: &[String]) -> Result<ProcessResult, String> {
+pub fn merge(input_paths: &[String]) -> Result<ProcessResult, ProcessError> {
     if input_paths.len() < 2 {
-        return Err("at least two pdf files are required for merge".to_string());
+        return Err(ProcessError::Validation(
+            "at least two pdf files are required for merge".to_string(),
+        ));
     }
 
     let mut documents_pages = BTreeMap::new();
@@ -13,8 +15,8 @@ pub fn merge(input_paths: &[String]) -> Result<ProcessResult, String> {
     let mut max_id = 1;
 
     for path in input_paths {
-        let mut doc =
-            Document::load(path).map_err(|e| format!("could not loaded pdf {}: {}", path, e))?;
+        let mut doc = Document::load(path)
+            .map_err(|e| ProcessError::Pdf(format!("could not load pdf {}: {}", path, e)))?;
         doc.renumber_objects_with(max_id);
         max_id = doc.max_id + 1;
 
@@ -58,7 +60,10 @@ pub fn merge(input_paths: &[String]) -> Result<ProcessResult, String> {
         }
     }
 
-    let pages_parent = pages_object.as_ref().ok_or("Pages root not found")?.0;
+    let pages_parent = pages_object
+        .as_ref()
+        .ok_or(ProcessError::Pdf("Pages root not found".to_string()))?
+        .0;
 
     for (object_id, object) in documents_pages.iter() {
         if let Ok(dictionary) = object.as_dict() {
@@ -70,7 +75,8 @@ pub fn merge(input_paths: &[String]) -> Result<ProcessResult, String> {
         }
     }
 
-    let (catalog_id, catalog_obj) = catalog_object.ok_or("Catalog root not found")?;
+    let (catalog_id, catalog_obj) =
+        catalog_object.ok_or(ProcessError::Pdf("Catalog root not found".to_string()))?;
     let (page_id, page_obj) = pages_object.unwrap();
 
     if let Ok(dictionary) = page_obj.as_dict() {
@@ -105,11 +111,13 @@ pub fn merge(input_paths: &[String]) -> Result<ProcessResult, String> {
     let output_path = temp_dir.join("merged.pdf");
     document
         .save(&output_path)
-        .map_err(|e| format!("could not save merged pdf: {}", e))?;
+        .map_err(|e| ProcessError::Pdf(format!("could not save merged pdf: {}", e)))?;
 
     let output_path_str = output_path
         .to_str()
-        .ok_or("could not convert output path to string")?
+        .ok_or(ProcessError::Validation(
+            "could not convert output path to string".to_string(),
+        ))?
         .to_string();
 
     let output_size = std::fs::metadata(&output_path)

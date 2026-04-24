@@ -26,6 +26,7 @@ pdf-extract = "0.7"
 lopdf = "0.34"
 zip = "2"
 tauri-plugin-clipboard-next = "0.2.4"
+thiserror = "2.0.18"
 
 [profile.release]
 opt-level = "z"

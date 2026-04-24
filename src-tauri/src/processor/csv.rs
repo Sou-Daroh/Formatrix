@@ -1,17 +1,15 @@
-use super::{create_temp_dir, CsvOptions, ProcessResult};
+use super::{create_temp_dir, CsvOptions, ProcessError, ProcessResult};
 
 /// Convert a CSV file to JSON.
 ///
 /// Each row becomes a JSON object with keys from the CSV header.
 /// All values are strings -- no type inference is performed.
 /// Missing fields (rows shorter than the header) become empty strings.
-pub fn process(input_path: &str, options: &CsvOptions) -> Result<ProcessResult, String> {
-    let mut reader = csv::Reader::from_path(input_path)
-        .map_err(|e| format!("could not open csv file: {}", e))?;
+pub fn process(input_path: &str, options: &CsvOptions) -> Result<ProcessResult, ProcessError> {
+    let mut reader = csv::Reader::from_path(input_path)?;
 
     let headers = reader
-        .headers()
-        .map_err(|e| format!("could not read csv headers: {}", e))?
+        .headers()?
         .iter()
         .map(|h| h.trim().to_string())
         .collect::<Vec<String>>();
@@ -19,7 +17,7 @@ pub fn process(input_path: &str, options: &CsvOptions) -> Result<ProcessResult, 
     let mut records: Vec<serde_json::Map<String, serde_json::Value>> = Vec::new();
 
     for result in reader.records() {
-        let record = result.map_err(|e| format!("could not read csv row: {}", e))?;
+        let record = result?;
         let mut map = serde_json::Map::new();
         for (i, header) in headers.iter().enumerate() {
             let value = record.get(i).unwrap_or("").to_string();
@@ -29,20 +27,20 @@ pub fn process(input_path: &str, options: &CsvOptions) -> Result<ProcessResult, 
     }
 
     let json = if options.pretty {
-        serde_json::to_string_pretty(&records)
+        serde_json::to_string_pretty(&records)?
     } else {
-        serde_json::to_string(&records)
-    }
-    .map_err(|e| format!("could not serialise json: {}", e))?;
+        serde_json::to_string(&records)?
+    };
 
     let temp_dir = create_temp_dir()?;
     let output_path = temp_dir.join("output.json");
-    std::fs::write(&output_path, &json)
-        .map_err(|e| format!("could not write output file: {}", e))?;
+    std::fs::write(&output_path, &json)?;
 
     let output_path_str = output_path
         .to_str()
-        .ok_or("could not convert output path to string")?
+        .ok_or(ProcessError::Validation(
+            "could not convert output path to string".to_string(),
+        ))?
         .to_string();
 
     let input_stem = std::path::Path::new(input_path)

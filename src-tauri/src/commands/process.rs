@@ -1,5 +1,5 @@
 use crate::processor::{
-    self, CsvOptions, ImageOptions, PdfSplitOptions, ProcessResult, ProgressPayload,
+    self, CsvOptions, ImageOptions, PdfSplitOptions, ProcessError, ProcessResult, ProgressPayload,
 };
 use std::time::Duration;
 use tauri::{AppHandle, Emitter};
@@ -15,14 +15,15 @@ fn emit_progress(app: &AppHandle, percent: u8, stage: &str) {
     );
 }
 
-/// Runs a CPU-bound task in a blocking thread while smoothly emitting asymptotic progress updates
+/// Runs a CPU-bound task in a blocking thread while smoothly emitting asymptotic progress updates.
+/// Converts ProcessError to String at the IPC boundary so the frontend receives readable messages.
 async fn run_with_progress<F>(
     app: &AppHandle,
     stage_name: &str,
     task: F,
 ) -> Result<ProcessResult, String>
 where
-    F: FnOnce() -> Result<ProcessResult, String> + Send + 'static,
+    F: FnOnce() -> Result<ProcessResult, ProcessError> + Send + 'static,
 {
     let app_clone = app.clone();
     let stage_clone = stage_name.to_string();
@@ -63,7 +64,8 @@ where
     // UI snaps to 100% on success in App.svelte automatically, but we can emit a 100 just in case
     emit_progress(app, 100, "Finalizing...");
 
-    result
+    // Convert ProcessError → String at the IPC boundary
+    result.map_err(|e| e.to_string())
 }
 
 #[tauri::command]

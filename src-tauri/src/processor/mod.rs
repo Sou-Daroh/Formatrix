@@ -6,6 +6,32 @@ pub mod pdf_text;
 
 use serde::{Deserialize, Serialize};
 
+/// Typed error enum for all processing operations.
+/// Replaces raw `String` errors with traceable, categorised variants.
+#[derive(Debug, thiserror::Error)]
+pub enum ProcessError {
+    #[error("IO error: {0}")]
+    Io(#[from] std::io::Error),
+
+    #[error("Image error: {0}")]
+    Image(#[from] ::image::ImageError),
+
+    #[error("CSV error: {0}")]
+    Csv(#[from] ::csv::Error),
+
+    #[error("PDF error: {0}")]
+    Pdf(String),
+
+    #[error("JSON error: {0}")]
+    Json(#[from] serde_json::Error),
+
+    #[error("ZIP error: {0}")]
+    Zip(#[from] zip::result::ZipError),
+
+    #[error("{0}")]
+    Validation(String),
+}
+
 /// Result returned to the frontend after processing.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ProcessResult {
@@ -44,9 +70,9 @@ pub struct ProgressPayload {
 }
 
 /// Create a UUID-named subdirectory in the OS temp folder for output files.
-pub fn create_temp_dir() -> Result<std::path::PathBuf, String> {
+pub fn create_temp_dir() -> Result<std::path::PathBuf, ProcessError> {
     let id = uuid::Uuid::new_v4().to_string();
     let dir = std::env::temp_dir().join("formatrix").join(&id);
-    std::fs::create_dir_all(&dir).map_err(|e| format!("could not create temp directory: {}", e))?;
+    std::fs::create_dir_all(&dir)?;
     Ok(dir)
 }

@@ -1,4 +1,4 @@
-use super::{create_temp_dir, ImageOptions, ProcessResult};
+use super::{create_temp_dir, ImageOptions, ProcessError, ProcessResult};
 use image::imageops::FilterType;
 use image::GenericImageView;
 
@@ -10,8 +10,8 @@ use image::GenericImageView;
 /// If width and height are both 0, the original dimensions are preserved.
 /// If only one dimension is set, aspect ratio is maintained.
 /// If both are set, the image is fit within the bounding box (no crop).
-pub fn process(input_path: &str, options: &ImageOptions) -> Result<ProcessResult, String> {
-    let img = image::open(input_path).map_err(|e| format!("could not open image: {}", e))?;
+pub fn process(input_path: &str, options: &ImageOptions) -> Result<ProcessResult, ProcessError> {
+    let img = image::open(input_path)?;
 
     let (orig_w, orig_h) = img.dimensions();
     let (new_w, new_h) = calculate_dimensions(orig_w, orig_h, options.width, options.height);
@@ -32,7 +32,12 @@ pub fn process(input_path: &str, options: &ImageOptions) -> Result<ProcessResult
         "jpeg" | "jpg" => "jpeg",
         "png" => "png",
         "webp" => "webp",
-        _ => return Err(format!("unsupported output format: {}", format_str)),
+        _ => {
+            return Err(ProcessError::Validation(format!(
+                "unsupported output format: {}",
+                format_str
+            )))
+        }
     };
 
     let temp_dir = create_temp_dir()?;
@@ -45,32 +50,32 @@ pub fn process(input_path: &str, options: &ImageOptions) -> Result<ProcessResult
             } else {
                 options.quality
             };
-            let mut writer = std::fs::File::create(&output_path)
-                .map_err(|e| format!("could not create output file: {}", e))?;
+            let mut writer = std::fs::File::create(&output_path)?;
             let encoder = image::codecs::jpeg::JpegEncoder::new_with_quality(&mut writer, quality);
-            resized
-                .write_with_encoder(encoder)
-                .map_err(|e| format!("could not encode jpeg: {}", e))?;
+            resized.write_with_encoder(encoder)?;
         }
         "png" => {
             // PNG is always lossless — quality parameter does not apply
-            resized
-                .save(&output_path)
-                .map_err(|e| format!("could not save png: {}", e))?;
+            resized.save(&output_path)?;
         }
         "webp" => {
             // image crate's WebP encoder is lossless-only; lossy quality
             // control would require the `webp` crate (libwebp bindings)
-            resized
-                .save(&output_path)
-                .map_err(|e| format!("could not save webp: {}", e))?;
+            resized.save(&output_path)?;
         }
-        _ => return Err(format!("unsupported output format: {}", ext)),
+        _ => {
+            return Err(ProcessError::Validation(format!(
+                "unsupported output format: {}",
+                ext
+            )))
+        }
     }
 
     let output_path_str = output_path
         .to_str()
-        .ok_or("could not convert output path to string")?
+        .ok_or(ProcessError::Validation(
+            "could not convert output path to string".to_string(),
+        ))?
         .to_string();
 
     // Derive output name from input filename
@@ -121,7 +126,7 @@ fn calculate_dimensions(orig_w: u32, orig_h: u32, target_w: u32, target_h: u32) 
 }
 
 /// Detect output format from the input file extension.
-fn detect_format(path: &str) -> Result<String, String> {
+fn detect_format(path: &str) -> Result<String, ProcessError> {
     let ext = std::path::Path::new(path)
         .extension()
         .and_then(|e| e.to_str())
@@ -135,6 +140,9 @@ fn detect_format(path: &str) -> Result<String, String> {
         "gif" => Ok("jpeg".to_string()),
         "bmp" => Ok("png".to_string()),
         "tiff" | "tif" => Ok("png".to_string()),
-        _ => Err(format!("could not detect format from extension: {}", ext)),
+        _ => Err(ProcessError::Validation(format!(
+            "could not detect format from extension: {}",
+            ext
+        ))),
     }
 }
