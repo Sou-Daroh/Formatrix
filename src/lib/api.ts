@@ -121,53 +121,14 @@ export async function listenToProgress(
 export async function listenForFileDrop(
   callback: (paths: string[]) => void,
 ): Promise<UnlistenFn> {
-  // Debounce guard: multiple Tauri event channels can fire for the same drop
-  let lastDropTime = 0;
-  const DEBOUNCE_MS = 300;
-
-  function dedupedCallback(paths: string[]) {
-    const now = Date.now();
-    if (now - lastDropTime < DEBOUNCE_MS) return;
-    lastDropTime = now;
-    callback(paths);
-  }
-
-  const unlisten1 = await getCurrentWebviewWindow().onDragDropEvent((event) => {
+  // Tauri 2: only onDragDropEvent fires for native OS drops
+  const unlisten = await getCurrentWebviewWindow().onDragDropEvent((event) => {
     if (event.payload.type === "drop") {
-      dedupedCallback(event.payload.paths);
+      callback(event.payload.paths);
     }
   });
 
-  const unlisten2 = await listen<{ paths: string[] }>(
-    "tauri://drag-drop",
-    (event) => {
-      if (event.payload && event.payload.paths)
-        dedupedCallback(event.payload.paths);
-    },
-  );
-
-  const unlisten3 = await listen<{ paths: string[] }>(
-    "tauri://drop",
-    (event) => {
-      if (event.payload && event.payload.paths)
-        dedupedCallback(event.payload.paths);
-    },
-  );
-
-  const unlisten4 = await listen<{ paths: string[] }>(
-    "tauri://file-drop",
-    (event) => {
-      if (event.payload && event.payload.paths)
-        dedupedCallback(event.payload.paths);
-    },
-  );
-
-  return () => {
-    unlisten1();
-    unlisten2();
-    unlisten3();
-    unlisten4();
-  };
+  return unlisten;
 }
 
 /**
