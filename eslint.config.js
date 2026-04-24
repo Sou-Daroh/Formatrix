@@ -30,7 +30,10 @@ export default [
   {
     files: ["src/**/*.svelte"],
     languageOptions: {
-      globals: globals.browser,
+      globals: {
+        ...globals.browser,
+        __APP_VERSION__: "readonly",
+      },
       parser: svelteParser,
       parserOptions: {
         parser: tsParser,
