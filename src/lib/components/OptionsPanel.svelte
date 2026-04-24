@@ -38,20 +38,44 @@
         bind:value={imageOptions.height}
       />
     </div>
-    <div class="option-group">
-      <label class="label" for="opt-quality">
-        Quality
-        <span class="option-value mono">{imageOptions.quality || "auto"}</span>
-      </label>
-      <input
-        id="opt-quality"
-        type="range"
-        min="0"
-        max="100"
-        step="1"
-        bind:value={imageOptions.quality}
-      />
-    </div>
+    {#if imageOptions.format === "" || imageOptions.format === "jpeg"}
+      <div class="option-group">
+        <label class="label" for="opt-quality">
+          Quality
+          <span class="option-value mono">{imageOptions.quality || "auto"}</span
+          >
+        </label>
+        <input
+          id="opt-quality"
+          type="range"
+          min="0"
+          max="100"
+          step="1"
+          bind:value={imageOptions.quality}
+        />
+      </div>
+    {:else}
+      <div class="option-info">
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <circle cx="12" cy="12" r="10" />
+          <line x1="12" y1="16" x2="12" y2="12" />
+          <line x1="12" y1="8" x2="12.01" y2="8" />
+        </svg>
+        <span
+          >{imageOptions.format === "png" ? "PNG" : "WebP"} uses lossless compression.
+          Quality does not apply.</span
+        >
+      </div>
+    {/if}
     <div class="option-group">
       <label class="label" for="opt-format">Output Format</label>
       <select id="opt-format" class="select" bind:value={imageOptions.format}>

@@ -53,11 +53,14 @@ pub fn process(input_path: &str, options: &ImageOptions) -> Result<ProcessResult
                 .map_err(|e| format!("could not encode jpeg: {}", e))?;
         }
         "png" => {
+            // PNG is always lossless — quality parameter does not apply
             resized
                 .save(&output_path)
                 .map_err(|e| format!("could not save png: {}", e))?;
         }
         "webp" => {
+            // image crate's WebP encoder is lossless-only; lossy quality
+            // control would require the `webp` crate (libwebp bindings)
             resized
                 .save(&output_path)
                 .map_err(|e| format!("could not save webp: {}", e))?;
