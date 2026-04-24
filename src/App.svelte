@@ -21,7 +21,7 @@
     PdfSplitOptions,
     ProgressPayload,
   } from "./lib/api";
-  import type { TaskType } from "./lib/store.svelte";
+  import type { TaskType } from "./lib/types";
 
   // --- App State ---
   type AppStep = "choose" | "configure" | "processing" | "result";
