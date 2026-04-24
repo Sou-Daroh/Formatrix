@@ -7,7 +7,7 @@ edition = "2021"
 
 [lib]
 name = "formatrix_lib"
-crate-type = ["staticlib", "cdylib", "rlib"]
+crate-type = ["lib", "rlib"]
 
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
