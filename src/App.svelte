@@ -394,7 +394,7 @@
   <!-- Footer -->
   <footer class="app-footer">
     <span class="footer-text mono text-dim"
-      >v1.0.0 · All processing is offline</span
+      >v{__APP_VERSION__} · All processing is offline</span
     >
   </footer>
 </div>
