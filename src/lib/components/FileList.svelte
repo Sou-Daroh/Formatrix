@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { formatSize } from "../utils";
+
   interface Props {
     files: string[];
     sizes?: Record<string, number>;
@@ -9,14 +11,6 @@
 
   function basename(path: string): string {
     return path.split(/[\\/]/).pop() || path;
-  }
-
-  function formatSize(bytes: number): string {
-    if (bytes === 0) return "0 B";
-    const k = 1024;
-    const units = ["B", "KB", "MB", "GB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + units[i];
   }
 </script>
 

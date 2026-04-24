@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { ProcessResult } from "../api";
   import { saveOutputFile } from "../api";
+  import { formatSize } from "../utils";
 
   interface Props {
     result?: ProcessResult;
@@ -33,14 +34,6 @@
     } finally {
       saving = false;
     }
-  }
-
-  function formatSize(bytes: number): string {
-    if (!bytes) return "0 B";
-    const k = 1024;
-    const units = ["B", "KB", "MB", "GB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + units[i];
   }
 </script>
 
