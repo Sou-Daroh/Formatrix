@@ -108,7 +108,7 @@ pub async fn process_pdf_split(
     options: PdfSplitOptions,
 ) -> Result<ProcessResult, String> {
     run_with_progress(&app, "Splitting PDF...", move || {
-        processor::pdf_merge::split(&input_path, &options)
+        processor::pdf_split::split(&input_path, &options)
     })
     .await
 }

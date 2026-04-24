@@ -308,7 +308,7 @@ fn test_pdf_split() {
     let options = formatrix_lib::processor::PdfSplitOptions {
         pages: "1,3".to_string(),
     };
-    let result = formatrix_lib::processor::pdf_merge::split(&pdf_path, &options);
+    let result = formatrix_lib::processor::pdf_split::split(&pdf_path, &options);
     assert!(result.is_ok(), "pdf split failed: {:?}", result.err());
     let r = result.unwrap();
     assert!(Path::new(&r.output_path).exists());
