@@ -52,6 +52,14 @@ where
     // Task finished! Kill the progress loop
     progress_task.abort();
 
+    // On error, clean up any orphaned temp files created during processing
+    if let Err(ref _e) = result {
+        let temp_root = std::env::temp_dir().join("formatrix");
+        if temp_root.exists() {
+            let _ = std::fs::remove_dir_all(&temp_root);
+        }
+    }
+
     // UI snaps to 100% on success in App.svelte automatically, but we can emit a 100 just in case
     emit_progress(app, 100, "Finalizing...");
 
