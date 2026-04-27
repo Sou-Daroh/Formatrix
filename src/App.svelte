@@ -282,9 +282,30 @@
     progressStage = "Preparing...";
     step = "configure";
   }
+  function handleGlobalError(e: ErrorEvent) {
+    console.error("Global error caught:", e.error);
+    // If an error happens outside processing, we at least show it to the user
+    // rather than failing silently.
+    if (step !== "processing") {
+      error = String(e.error || e.message);
+      step = "result";
+    }
+  }
+
+  function handleUnhandledRejection(e: PromiseRejectionEvent) {
+    console.error("Unhandled promise rejection:", e.reason);
+    if (step !== "processing") {
+      error = String(e.reason);
+      step = "result";
+    }
+  }
 </script>
 
-<svelte:window onkeydown={handleKeydown} />
+<svelte:window
+  onkeydown={handleKeydown}
+  onerror={handleGlobalError}
+  onunhandledrejection={handleUnhandledRejection}
+/>
 
 <div class="app-shell">
   <!-- Header -->
