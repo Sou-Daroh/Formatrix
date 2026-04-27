@@ -13,14 +13,13 @@
     "fs:allow-write-text-file",
     "fs:allow-exists",
     "fs:allow-copy-file",
+    "fs:allow-stat",
     "clipboard-next:default",
     {
       "identifier": "fs:scope",
       "allow": [
         { "path": "$TEMP/**" },
-        { "path": "$DOWNLOAD/**" },
-        { "path": "$DESKTOP/**" },
-        { "path": "$DOCUMENT/**" }
+        { "path": "$HOME/**" }
       ]
     }
   ]
