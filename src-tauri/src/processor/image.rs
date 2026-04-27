@@ -102,7 +102,20 @@ pub fn process(input_path: &str, options: &ImageOptions) -> Result<ProcessResult
 /// - (w, 0) -> scale to width, maintain ratio
 /// - (0, h) -> scale to height, maintain ratio
 /// - (w, h) -> fit within bounding box, no crop
-fn calculate_dimensions(orig_w: u32, orig_h: u32, target_w: u32, target_h: u32) -> (u32, u32) {
+fn calculate_dimensions(
+    orig_w: u32,
+    orig_h: u32,
+    mut target_w: u32,
+    mut target_h: u32,
+) -> (u32, u32) {
+    // Ceiling guard: prevent malicious allocation of massive images
+    const MAX_DIMENSION: u32 = 10000;
+    if target_w > MAX_DIMENSION {
+        target_w = MAX_DIMENSION;
+    }
+    if target_h > MAX_DIMENSION {
+        target_h = MAX_DIMENSION;
+    }
     match (target_w, target_h) {
         (0, 0) => (orig_w, orig_h),
         (w, 0) => {
