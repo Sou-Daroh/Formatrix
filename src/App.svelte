@@ -8,6 +8,7 @@
   import Toast from "./lib/components/Toast.svelte";
   import {
     processImage,
+    processImageBatch,
     processCsvJson,
     processPdfText,
     processPdfMerge,
@@ -87,7 +88,7 @@
       icon: "image",
       accept: ".jpg,.jpeg,.png,.webp,.bmp,.gif",
       hint: "Supports JPG, PNG, WebP, GIF, BMP",
-      multiple: false,
+      multiple: true,
     },
     {
       type: "csv_json",
@@ -283,7 +284,11 @@
       let res: ProcessResult;
       switch (selectedOp) {
         case "image":
-          res = await processImage(files[0], imageOpts);
+          if (files.length > 1) {
+            res = await processImageBatch(files, imageOpts);
+          } else {
+            res = await processImage(files[0], imageOpts);
+          }
           break;
         case "csv_json":
           res = await processCsvJson(files[0], csvOpts);

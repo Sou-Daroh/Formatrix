@@ -79,6 +79,13 @@ export async function processImage(
   return invoke<ProcessResult>("process_image", { inputPath, options });
 }
 
+export async function processImageBatch(
+  inputPaths: string[],
+  options: ImageOptions,
+): Promise<ProcessResult> {
+  return invoke<ProcessResult>("process_image_batch", { inputPaths, options });
+}
+
 export async function processCsvJson(
   inputPath: string,
   options: CsvOptions,
