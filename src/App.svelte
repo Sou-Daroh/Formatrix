@@ -105,8 +105,29 @@
 
   // --- Derived ---
   let currentOp = $derived(operations.find((o) => o.type === selectedOp));
+  let isValidPdfSplitPages = $derived(
+    selectedOp === "pdf_split"
+      ? splitOpts.pages.trim() === "" ||
+          /^(\s*\d+\s*(-\s*\d+\s*)?(,\s*\d+\s*(-\s*\d+\s*)?)*)?$/.test(
+            splitOpts.pages,
+          )
+      : true,
+  );
+
+  let isValidImageOpts = $derived(
+    selectedOp === "image"
+      ? !(
+          imageOpts.width === 0 &&
+          imageOpts.height === 0 &&
+          imageOpts.format === ""
+        )
+      : true,
+  );
+
   let canProcess = $derived(
-    selectedOp === "pdf_merge" ? files.length >= 2 : files.length >= 1,
+    (selectedOp === "pdf_merge" ? files.length >= 2 : files.length >= 1) &&
+      isValidPdfSplitPages &&
+      isValidImageOpts,
   );
 
   // --- Handlers ---
@@ -354,6 +375,16 @@
               </div>
             </div>
             <div class="configure-footer">
+              {#if !isValidPdfSplitPages}
+                <div class="validation-error">
+                  Invalid page range format. Use numbers or ranges (e.g.
+                  1,3,5-7).
+                </div>
+              {:else if !isValidImageOpts}
+                <div class="validation-error">
+                  Image operation is a no-op (no size or format changes).
+                </div>
+              {/if}
               <button
                 class="btn btn-primary btn-lg process-btn"
                 disabled={!canProcess}
@@ -579,6 +610,14 @@
     flex-direction: column;
     align-items: center;
     gap: var(--space-sm);
+  }
+
+  .validation-error {
+    color: #ef4444; /* red-500 */
+    font-size: 12px;
+    font-weight: 500;
+    text-align: center;
+    margin-bottom: var(--space-xs);
   }
 
   .process-btn {
