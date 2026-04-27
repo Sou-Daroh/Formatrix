@@ -1,4 +1,6 @@
 <script lang="ts">
+  import Icon from "./Icon.svelte";
+
   interface Props {
     title: string;
     description: string;
@@ -11,7 +13,9 @@
 </script>
 
 <button class="operation-card" class:active {onclick} type="button">
-  <div class="card-icon">{icon}</div>
+  <div class="card-icon">
+    <Icon name={icon} size={24} />
+  </div>
   <div class="card-content">
     <h3 class="card-title">{title}</h3>
     <p class="card-desc">{description}</p>
