@@ -122,3 +122,28 @@ pub async fn process_pdf_split(
     })
     .await
 }
+
+#[tauri::command]
+pub async fn process_image_batch(
+    app: AppHandle,
+    input_paths: Vec<String>,
+    options: ImageOptions,
+) -> Result<ProcessResult, String> {
+    let app_clone = app.clone();
+    let result = tokio::task::spawn_blocking(move || {
+        processor::image_batch::process_batch(&input_paths, &options, |percent, stage| {
+            emit_progress(&app_clone, percent, stage);
+        })
+    })
+    .await
+    .map_err(|e| format!("thread panic: {}", e))?;
+
+    if let Err(ref _e) = result {
+        let temp_root = std::env::temp_dir().join("formatrix");
+        if temp_root.exists() {
+            let _ = std::fs::remove_dir_all(&temp_root);
+        }
+    }
+
+    result.map_err(|e| e.to_string())
+}

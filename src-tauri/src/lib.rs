@@ -9,6 +9,7 @@ pub fn run() {
         .plugin(tauri_plugin_fs::init())
         .invoke_handler(tauri::generate_handler![
             commands::process::process_image,
+            commands::process::process_image_batch,
             commands::process::process_csv_json,
             commands::process::process_pdf_text,
             commands::process::process_pdf_merge,
