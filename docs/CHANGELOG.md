@@ -7,6 +7,26 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.2.1] — 2026-04-27
+
+### Added
+- Inline preview for image results (JPEG, PNG, WebP) in the result view
+- Inline preview for text/JSON results in a scrollable code block
+- Open file explorer with saved file selected after Save As
+- Copy to clipboard support for JSON output (previously text/plain only)
+
+### Fixed
+- File sizes showing 0 B — added missing `fs:allow-stat` permission
+- File size not readable outside Downloads/Desktop/Documents — widened fs scope to `$HOME`
+- Back button crash — replaced blocked browser `confirm()` with Tauri dialog plugin `confirm()`
+- Added `dialog:allow-confirm` capability
+
+### Changed
+- Result card widened from 400px to 560px to accommodate previews
+- Asset protocol enabled for serving local images in webview
+
+---
+
 ## [1.2.0] — 2026-04-27
 
 ### Added
