@@ -1,6 +1,6 @@
 [package]
 name = "formatrix"
-version = "1.0.1"
+version = "1.2.0"
 description = "Native desktop application for file conversion and processing"
 authors = ["Sou Daroh"]
 edition = "2021"
