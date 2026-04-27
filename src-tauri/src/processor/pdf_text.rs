@@ -5,6 +5,17 @@ use super::{create_temp_dir, ProcessError, ProcessResult};
 /// Reads the PDF bytes, extracts selectable text via `pdf-extract`,
 /// and normalises line endings to `\n`.
 pub fn process(input_path: &str) -> Result<ProcessResult, ProcessError> {
+    // Guard: pdf-extract loads the entire file into memory.
+    // Reject files over 200 MB to prevent silent OOM crashes.
+    const MAX_PDF_SIZE: u64 = 200 * 1024 * 1024;
+    let file_size = std::fs::metadata(input_path)?.len();
+    if file_size > MAX_PDF_SIZE {
+        return Err(ProcessError::Validation(format!(
+            "PDF is too large ({:.0} MB). Maximum supported size is 200 MB.",
+            file_size as f64 / (1024.0 * 1024.0)
+        )));
+    }
+
     let bytes = std::fs::read(input_path)?;
 
     let text = pdf_extract::extract_text_from_mem(&bytes)

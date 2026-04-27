@@ -14,6 +14,22 @@ pub fn merge(input_paths: &[String]) -> Result<ProcessResult, ProcessError> {
     let mut document = Document::with_version("1.5");
     let mut max_id = 1;
 
+    // Guard: lopdf loads entire files into memory. Reject oversized inputs.
+    const MAX_PDF_SIZE: u64 = 200 * 1024 * 1024;
+    for path in input_paths {
+        let size = std::fs::metadata(path).map(|m| m.len()).unwrap_or(0);
+        if size > MAX_PDF_SIZE {
+            return Err(ProcessError::Validation(format!(
+                "PDF '{}' is too large ({:.0} MB). Maximum supported size is 200 MB.",
+                std::path::Path::new(path)
+                    .file_name()
+                    .and_then(|n| n.to_str())
+                    .unwrap_or(path),
+                size as f64 / (1024.0 * 1024.0)
+            )));
+        }
+    }
+
     for path in input_paths {
         let mut doc = Document::load(path)
             .map_err(|e| ProcessError::Pdf(format!("could not load pdf {}: {}", path, e)))?;

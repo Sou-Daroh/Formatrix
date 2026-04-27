@@ -3,6 +3,16 @@ use lopdf::Document;
 use std::io::Write;
 
 pub fn split(input_path: &str, options: &PdfSplitOptions) -> Result<ProcessResult, ProcessError> {
+    // Guard: lopdf loads the entire file into memory.
+    const MAX_PDF_SIZE: u64 = 200 * 1024 * 1024;
+    let file_size = std::fs::metadata(input_path)?.len();
+    if file_size > MAX_PDF_SIZE {
+        return Err(ProcessError::Validation(format!(
+            "PDF is too large ({:.0} MB). Maximum supported size is 200 MB.",
+            file_size as f64 / (1024.0 * 1024.0)
+        )));
+    }
+
     let doc = Document::load(input_path)
         .map_err(|e| ProcessError::Pdf(format!("could not open pdf: {}", e)))?;
 
