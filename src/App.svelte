@@ -282,12 +282,16 @@
     progressStage = "Preparing...";
     step = "configure";
   }
-  function handleGlobalError(e: ErrorEvent) {
-    console.error("Global error caught:", e.error);
+  function handleGlobalError(e: Event) {
+    const errorEvent = e as ErrorEvent;
+    console.error(
+      "Global error caught:",
+      errorEvent.error || errorEvent.message,
+    );
     // If an error happens outside processing, we at least show it to the user
     // rather than failing silently.
     if (step !== "processing") {
-      error = String(e.error || e.message);
+      error = String(errorEvent.error || errorEvent.message || "Unknown error");
       step = "result";
     }
   }
