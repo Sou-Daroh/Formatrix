@@ -64,6 +64,54 @@ fn test_image_format_conversion() {
     let _ = std::fs::remove_file(&input);
 }
 
+#[test]
+fn test_image_batch() {
+    let input1 = create_test_image("test_batch_1.png");
+    let input2 = create_test_image("test_batch_2.png");
+    let options = formatrix_lib::processor::ImageOptions {
+        width: 10,
+        height: 10,
+        quality: 85,
+        format: "jpeg".to_string(),
+    };
+
+    // We pass a dummy progress callback
+    let result = formatrix_lib::processor::image_batch::process_batch(
+        &[input1.clone(), input2.clone()],
+        &options,
+        |_percent, _stage| {},
+    );
+
+    assert!(result.is_ok(), "batch process failed: {:?}", result.err());
+    let r = result.unwrap();
+    assert!(Path::new(&r.output_path).exists(), "zip file must exist");
+    assert!(r.output_name.ends_with(".zip"), "output should be ZIP");
+    assert_eq!(r.output_mime, "application/zip");
+
+    // Let's verify the zip contains the expected files
+    let file = std::fs::File::open(&r.output_path).unwrap();
+    let mut archive = zip::ZipArchive::new(file).unwrap();
+    assert_eq!(archive.len(), 2, "archive should contain exactly 2 files");
+
+    // Check filenames inside the zip
+    let mut names: Vec<String> = (0..archive.len())
+        .map(|i| archive.by_index(i).unwrap().name().to_string())
+        .collect();
+    names.sort();
+    assert!(
+        names[0].contains("test_batch_1"),
+        "should contain first file"
+    );
+    assert!(
+        names[1].contains("test_batch_2"),
+        "should contain second file"
+    );
+
+    let _ = std::fs::remove_file(&r.output_path);
+    let _ = std::fs::remove_file(&input1);
+    let _ = std::fs::remove_file(&input2);
+}
+
 // =========================================================
 // CSV Processor
 // =========================================================
