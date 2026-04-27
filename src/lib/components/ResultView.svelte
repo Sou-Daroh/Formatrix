@@ -1,7 +1,8 @@
 <script lang="ts">
   import type { ProcessResult } from "../api";
-  import { saveOutputFile } from "../api";
+  import { saveOutputFile, copyTextFromResult } from "../api";
   import { formatSize } from "../utils";
+  import Icon from "./Icon.svelte";
 
   interface Props {
     result?: ProcessResult;
@@ -15,6 +16,22 @@
   let saving = $state(false);
   let saved = $state(false);
   let saveError = $state("");
+  let copying = $state(false);
+  let copied = $state(false);
+
+  async function handleCopy() {
+    if (!result || result.output_mime !== "text/plain") return;
+    copying = true;
+    try {
+      await copyTextFromResult(result.output_path);
+      copied = true;
+      setTimeout(() => (copied = false), 2000);
+    } catch (e) {
+      console.error("Failed to copy text:", e);
+    } finally {
+      copying = false;
+    }
+  }
 
   async function handleSave() {
     if (!result) return;
@@ -102,6 +119,22 @@
       {/if}
 
       <div class="result-actions">
+        {#if result.output_mime === "text/plain"}
+          <button
+            class="btn btn-lg"
+            onclick={handleCopy}
+            disabled={copying}
+            type="button"
+            title="Copy extracted text to clipboard"
+          >
+            {#if copied}
+              <Icon name="check" size={16} /> Copied!
+            {:else}
+              <Icon name="copy" size={16} /> Copy Text
+            {/if}
+          </button>
+        {/if}
+
         {#if saved}
           <button
             class="btn btn-lg"

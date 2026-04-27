@@ -1,8 +1,8 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
-import { readFiles } from "tauri-plugin-clipboard-next-api";
-import { stat } from "@tauri-apps/plugin-fs";
+import { readFiles, writeText } from "tauri-plugin-clipboard-next-api";
+import { stat, readTextFile } from "@tauri-apps/plugin-fs";
 
 // --- Shared Types ---
 export interface ProcessResult {
@@ -155,4 +155,9 @@ export async function getFilesFromClipboard(): Promise<string[]> {
     console.warn("Failed to read files from clipboard:", e);
     return [];
   }
+}
+
+export async function copyTextFromResult(tempPathStr: string): Promise<void> {
+  const text = await readTextFile(tempPathStr);
+  await writeText(text);
 }
