@@ -10,20 +10,24 @@
   let { title, description, icon, active = false, onclick }: Props = $props();
 </script>
 
-<button
-  class="operation-card"
-  class:active
-  onclick={onclick}
-  type="button"
->
+<button class="operation-card" class:active {onclick} type="button">
   <div class="card-icon">{icon}</div>
   <div class="card-content">
     <h3 class="card-title">{title}</h3>
     <p class="card-desc">{description}</p>
   </div>
   <div class="card-arrow">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M5 12h14M12 5l7 7-7 7"/>
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <path d="M5 12h14M12 5l7 7-7 7" />
     </svg>
   </div>
 </button>
@@ -61,7 +65,9 @@
   }
 
   .operation-card:focus-visible {
-    box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent-border);
+    box-shadow:
+      0 0 0 2px var(--bg),
+      0 0 0 4px var(--accent-border);
   }
 
   .operation-card.active {
