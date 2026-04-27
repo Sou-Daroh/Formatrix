@@ -5,9 +5,10 @@
     files: string[];
     sizes?: Record<string, number>;
     onremove: (index: number) => void;
+    onclearall?: () => void;
   }
 
-  let { files, sizes = {}, onremove }: Props = $props();
+  let { files, sizes = {}, onremove, onclearall }: Props = $props();
 
   function basename(path: string): string {
     return path.split(/[\\/]/).pop() || path;
@@ -17,8 +18,20 @@
 {#if files.length > 0}
   <div class="file-list">
     <div class="file-list-header">
-      <span class="label">Staged Files</span>
-      <span class="badge">{files.length}</span>
+      <div class="file-list-title">
+        <span class="label">Staged Files</span>
+        <span class="badge">{files.length}</span>
+      </div>
+      {#if onclearall && files.length > 1}
+        <button
+          class="btn-clear text-dim"
+          onclick={onclearall}
+          type="button"
+          aria-label="Clear all files"
+        >
+          Clear All
+        </button>
+      {/if}
     </div>
     <ul class="file-items">
       {#each files as file, i}
@@ -86,7 +99,30 @@
   .file-list-header {
     display: flex;
     align-items: center;
+    justify-content: space-between;
+  }
+
+  .file-list-title {
+    display: flex;
+    align-items: center;
     gap: var(--space-sm);
+  }
+
+  .btn-clear {
+    background: none;
+    border: none;
+    font-size: 11px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 2px 6px;
+    border-radius: var(--radius-sm);
+    transition: all 0.2s;
+  }
+
+  .btn-clear:hover {
+    background: var(--surface-2);
+    color: var(--text);
   }
 
   .file-items {

@@ -217,6 +217,15 @@
     fileSizes = newSizes;
   }
 
+  function clearAllFiles() {
+    files = [];
+    fileSizes = {};
+  }
+
+  function getBasename(path: string): string {
+    return path.split(/[\\/]/).pop() || path;
+  }
+
   function goBack() {
     if (files.length > 0) {
       if (
@@ -441,7 +450,12 @@
                   multiple={currentOp.multiple}
                   onfiles={handleFiles}
                 />
-                <FileList {files} sizes={fileSizes} onremove={removeFile} />
+                <FileList
+                  {files}
+                  sizes={fileSizes}
+                  onremove={removeFile}
+                  onclearall={clearAllFiles}
+                />
               </div>
               <!-- Right: Options -->
               <div class="configure-options">
@@ -498,6 +512,13 @@
             <div class="processing-card">
               <div class="processing-spinner"></div>
               <h2 class="processing-title">Processing…</h2>
+              <div class="processing-filename text-dim">
+                {#if files.length === 1}
+                  {getBasename(files[0])}
+                {:else}
+                  {files.length} files
+                {/if}
+              </div>
               <ProgressBar percent={progress} stage={progressStage} />
               <div class="processing-time mono text-dim">
                 Elapsed: {formatTime(elapsedTime)}
@@ -757,6 +778,16 @@
     font-size: 16px;
     font-weight: 600;
     color: var(--text);
+    margin-bottom: -10px; /* Reduce gap to filename */
+  }
+
+  .processing-filename {
+    font-size: 13px;
+    font-family: var(--font-mono);
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   /* --- Responsive Breakpoints --- */
