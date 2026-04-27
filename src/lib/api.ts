@@ -164,6 +164,10 @@ export async function getFilesFromClipboard(): Promise<string[]> {
   }
 }
 
+export async function showInFolder(path: string): Promise<void> {
+  await invoke("show_in_folder", { path });
+}
+
 // Preview helpers
 export function getPreviewImageUrl(filePath: string): string {
   return convertFileSrc(filePath);
