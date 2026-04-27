@@ -5,6 +5,7 @@
   import OptionsPanel from "./lib/components/OptionsPanel.svelte";
   import ProgressBar from "./lib/components/ProgressBar.svelte";
   import ResultView from "./lib/components/ResultView.svelte";
+  import Toast from "./lib/components/Toast.svelte";
   import {
     processImage,
     processCsvJson,
@@ -35,6 +36,19 @@
   let result = $state<ProcessResult | undefined>(undefined);
   let error = $state("");
   let isProcessing = $state(false);
+
+  // --- Toast State ---
+  let toastMessage = $state("");
+  let toastType = $state<"info" | "error" | "success">("info");
+
+  function showToast(msg: string, type: "info" | "error" | "success" = "info") {
+    toastMessage = msg;
+    toastType = type;
+  }
+
+  function closeToast() {
+    toastMessage = "";
+  }
 
   // --- Options State ---
   let imageOpts = $state<ImageOptions>({
@@ -160,8 +174,9 @@
     }
 
     if (rejectedCount > 0) {
-      alert(
+      showToast(
         `Skipped ${rejectedCount} file(s) because they exceed the 1 GB limit.`,
+        "error",
       );
     }
 
@@ -293,6 +308,11 @@
     if (step !== "processing") {
       error = String(errorEvent.error || errorEvent.message || "Unknown error");
       step = "result";
+    } else {
+      showToast(
+        String(errorEvent.error || errorEvent.message || "Unknown error"),
+        "error",
+      );
     }
   }
 
@@ -301,6 +321,8 @@
     if (step !== "processing") {
       error = String(e.reason);
       step = "result";
+    } else {
+      showToast(String(e.reason), "error");
     }
   }
 </script>
@@ -310,6 +332,10 @@
   onerror={handleGlobalError}
   onunhandledrejection={handleUnhandledRejection}
 />
+
+{#if toastMessage}
+  <Toast message={toastMessage} type={toastType} onclose={closeToast} />
+{/if}
 
 <div class="app-shell">
   <!-- Header -->
