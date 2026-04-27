@@ -1,4 +1,4 @@
-import { invoke } from "@tauri-apps/api/core";
+import { invoke, convertFileSrc } from "@tauri-apps/api/core";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { readFiles, writeText } from "tauri-plugin-clipboard-next-api";
@@ -161,6 +161,20 @@ export async function getFilesFromClipboard(): Promise<string[]> {
   } catch (e) {
     console.warn("Failed to read files from clipboard:", e);
     return [];
+  }
+}
+
+// Preview helpers
+export function getPreviewImageUrl(filePath: string): string {
+  return convertFileSrc(filePath);
+}
+
+export async function getPreviewText(filePath: string): Promise<string> {
+  try {
+    const content = await readTextFile(filePath);
+    return content;
+  } catch {
+    return "";
   }
 }
 

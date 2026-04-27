@@ -1,6 +1,11 @@
 <script lang="ts">
   import type { ProcessResult } from "../api";
-  import { saveOutputFile, copyTextFromResult } from "../api";
+  import {
+    saveOutputFile,
+    copyTextFromResult,
+    getPreviewImageUrl,
+    getPreviewText,
+  } from "../api";
   import { formatSize } from "../utils";
   import Icon from "./Icon.svelte";
 
@@ -19,8 +24,45 @@
   let copying = $state(false);
   let copied = $state(false);
 
+  // Preview state
+  let previewExpanded = $state(true);
+  let previewImageUrl = $state("");
+  let previewText = $state("");
+  let previewLoading = $state(false);
+
+  const IMAGE_MIMES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+  const TEXT_MIMES = ["text/plain", "application/json"];
+
+  function hasPreview(mime: string): boolean {
+    return IMAGE_MIMES.includes(mime) || TEXT_MIMES.includes(mime);
+  }
+
+  async function loadPreview() {
+    if (!result || !hasPreview(result.output_mime)) return;
+    previewLoading = true;
+    previewImageUrl = "";
+    previewText = "";
+    try {
+      if (IMAGE_MIMES.includes(result.output_mime)) {
+        previewImageUrl = getPreviewImageUrl(result.output_path);
+      } else if (TEXT_MIMES.includes(result.output_mime)) {
+        previewText = await getPreviewText(result.output_path);
+      }
+    } catch (e) {
+      console.error("Failed to load preview:", e);
+    } finally {
+      previewLoading = false;
+    }
+  }
+
+  $effect(() => {
+    if (result) {
+      loadPreview();
+    }
+  });
+
   async function handleCopy() {
-    if (!result || result.output_mime !== "text/plain") return;
+    if (!result || !TEXT_MIMES.includes(result.output_mime)) return;
     copying = true;
     try {
       await copyTextFromResult(result.output_path);
@@ -114,12 +156,54 @@
         </div>
       </div>
 
+      {#if hasPreview(result.output_mime)}
+        <div class="preview-section">
+          <button
+            class="preview-toggle"
+            onclick={() => (previewExpanded = !previewExpanded)}
+            type="button"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="chevron"
+              class:expanded={previewExpanded}
+            >
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+            Preview
+          </button>
+
+          {#if previewExpanded}
+            <div class="preview-content animate-fade-in-up">
+              {#if previewLoading}
+                <div class="preview-loading">Loading preview…</div>
+              {:else if previewImageUrl}
+                <img
+                  src={previewImageUrl}
+                  alt={result.output_name}
+                  class="preview-image"
+                />
+              {:else if previewText}
+                <pre class="preview-text mono">{previewText}</pre>
+              {/if}
+            </div>
+          {/if}
+        </div>
+      {/if}
+
       {#if saveError}
         <p class="save-error mono">{saveError}</p>
       {/if}
 
       <div class="result-actions">
-        {#if result.output_mime === "text/plain"}
+        {#if TEXT_MIMES.includes(result.output_mime)}
           <button
             class="btn btn-lg"
             onclick={handleCopy}
@@ -214,7 +298,7 @@
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
     text-align: center;
-    max-width: 400px;
+    max-width: 560px;
     width: 100%;
   }
 
@@ -292,5 +376,75 @@
     justify-content: center;
     gap: var(--space-md);
     width: 100%;
+  }
+
+  /* Preview styles */
+  .preview-section {
+    width: 100%;
+  }
+
+  .preview-toggle {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    background: none;
+    border: none;
+    color: var(--text-2);
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    cursor: pointer;
+    padding: var(--space-xs) 0;
+    transition: color 0.15s;
+  }
+
+  .preview-toggle:hover {
+    color: var(--text);
+  }
+
+  .chevron {
+    transition: transform 0.2s ease;
+    transform: rotate(-90deg);
+  }
+
+  .chevron.expanded {
+    transform: rotate(0deg);
+  }
+
+  .preview-content {
+    margin-top: var(--space-sm);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    background: var(--bg);
+  }
+
+  .preview-image {
+    display: block;
+    max-width: 100%;
+    max-height: 320px;
+    margin: 0 auto;
+    object-fit: contain;
+    border-radius: var(--radius-sm);
+  }
+
+  .preview-text {
+    font-size: 11px;
+    line-height: 1.6;
+    color: var(--text-2);
+    padding: var(--space-md);
+    margin: 0;
+    max-height: 280px;
+    overflow: auto;
+    text-align: left;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .preview-loading {
+    padding: var(--space-lg);
+    font-size: 12px;
+    color: var(--text-3);
   }
 </style>
