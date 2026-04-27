@@ -1,5 +1,7 @@
 # Formatrix
 
+[![CI](https://github.com/Sou-Daroh/formatrix/actions/workflows/ci.yml/badge.svg)](https://github.com/Sou-Daroh/formatrix/actions/workflows/ci.yml)
+
 A native desktop application for file conversion and processing. Built with Tauri, Rust, and Svelte.
 
 Convert images, transform data, and manipulate PDFs — all processed locally on your machine. No internet connection required. No files leave your device.
