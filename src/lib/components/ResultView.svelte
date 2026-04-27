@@ -5,6 +5,7 @@
     copyTextFromResult,
     getPreviewImageUrl,
     getPreviewText,
+    showInFolder,
   } from "../api";
   import { formatSize } from "../utils";
   import Icon from "./Icon.svelte";
@@ -86,6 +87,7 @@
       );
       if (savedPath) {
         saved = true;
+        showInFolder(savedPath).catch(() => {});
       }
       // Empty string means user cancelled — do nothing
     } catch (e) {

@@ -94,6 +94,37 @@ pub async fn save_output_file(
     }
 }
 
+/// Opens the system file explorer with the given file selected.
+#[tauri::command]
+pub fn show_in_folder(path: String) -> Result<(), String> {
+    #[cfg(target_os = "windows")]
+    {
+        std::process::Command::new("explorer")
+            .args(["/select,", &path])
+            .spawn()
+            .map_err(|e| format!("failed to open explorer: {}", e))?;
+    }
+    #[cfg(target_os = "macos")]
+    {
+        std::process::Command::new("open")
+            .args(["-R", &path])
+            .spawn()
+            .map_err(|e| format!("failed to open Finder: {}", e))?;
+    }
+    #[cfg(target_os = "linux")]
+    {
+        let parent = std::path::Path::new(&path)
+            .parent()
+            .map(|p| p.to_string_lossy().to_string())
+            .unwrap_or(path);
+        std::process::Command::new("xdg-open")
+            .arg(&parent)
+            .spawn()
+            .map_err(|e| format!("failed to open file manager: {}", e))?;
+    }
+    Ok(())
+}
+
 /// Removes all stale temp directories from previous sessions.
 /// Called on app startup.
 #[tauri::command]

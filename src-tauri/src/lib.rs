@@ -17,6 +17,7 @@ pub fn run() {
             commands::file::open_file_dialog,
             commands::file::save_output_file,
             commands::file::cleanup_temp_files,
+            commands::file::show_in_folder,
         ])
         .setup(|_app| {
             // Clean stale temp files from previous sessions on startup
