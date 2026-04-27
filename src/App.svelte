@@ -16,6 +16,7 @@
     listenToProgress,
     getFileSize,
   } from "./lib/api";
+  import { confirm } from "@tauri-apps/plugin-dialog";
   import type {
     ProcessResult,
     ImageOptions,
@@ -227,13 +228,13 @@
     return path.split(/[\\/]/).pop() || path;
   }
 
-  function goBack() {
+  async function goBack() {
     if (files.length > 0) {
-      if (
-        !confirm("You have files staged. Are you sure you want to go back?")
-      ) {
-        return;
-      }
+      const ok = await confirm(
+        "You have files staged. Are you sure you want to go back?",
+        { title: "Formatrix", kind: "warning" },
+      );
+      if (!ok) return;
     }
     step = "choose";
     selectedOp = null;
