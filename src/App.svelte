@@ -34,6 +34,7 @@
   let progressStage = $state("Preparing...");
   let result = $state<ProcessResult | undefined>(undefined);
   let error = $state("");
+  let isProcessing = $state(false);
 
   // --- Options State ---
   let imageOpts = $state<ImageOptions>({
@@ -186,10 +187,19 @@
       e.preventDefault();
       handleProcess();
     }
+    if (e.key === "Escape" && step !== "choose" && step !== "processing") {
+      e.preventDefault();
+      if (step === "result") {
+        resetAll();
+      } else {
+        goBack();
+      }
+    }
   }
 
   async function handleProcess() {
-    if (!selectedOp || !canProcess) return;
+    if (!selectedOp || !canProcess || isProcessing) return;
+    isProcessing = true;
     step = "processing";
     progress = 10;
     progressStage = "Starting...";
@@ -227,6 +237,7 @@
       error = String(e);
     } finally {
       unlisten();
+      isProcessing = false;
       step = "result";
     }
   }
@@ -258,7 +269,7 @@
   <!-- Header -->
   <header class="app-header">
     <div class="header-left">
-      {#if step !== "choose"}
+      {#if step !== "choose" && step !== "processing"}
         <button class="btn btn-ghost btn-sm" onclick={goBack} type="button">
           <svg
             width="14"
