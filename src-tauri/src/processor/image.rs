@@ -102,7 +102,7 @@ pub fn process(input_path: &str, options: &ImageOptions) -> Result<ProcessResult
 /// - (w, 0) -> scale to width, maintain ratio
 /// - (0, h) -> scale to height, maintain ratio
 /// - (w, h) -> fit within bounding box, no crop
-fn calculate_dimensions(
+pub(crate) fn calculate_dimensions(
     orig_w: u32,
     orig_h: u32,
     mut target_w: u32,
@@ -139,7 +139,7 @@ fn calculate_dimensions(
 }
 
 /// Detect output format from the input file extension.
-fn detect_format(path: &str) -> Result<String, ProcessError> {
+pub(crate) fn detect_format(path: &str) -> Result<String, ProcessError> {
     let ext = std::path::Path::new(path)
         .extension()
         .and_then(|e| e.to_str())

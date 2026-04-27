@@ -1,5 +1,6 @@
 pub mod csv;
 pub mod image;
+pub mod image_batch;
 pub mod pdf_merge;
 pub mod pdf_split;
 pub mod pdf_text;
