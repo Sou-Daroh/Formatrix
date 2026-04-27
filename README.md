@@ -16,6 +16,7 @@ Convert images, transform data, and manipulate PDFs — all processed locally on
 | Operation | Input | Output | Description |
 |---|---|---|---|
 | Image Resize / Compress | JPG, PNG, WebP, GIF, BMP, TIFF | JPG, PNG, WebP | Resize by dimensions and re-encode with quality control |
+| Batch Image Processing | Multiple images | ZIP | Process multiple images with shared settings in one pass |
 | CSV → JSON | CSV | JSON | Convert tabular CSV data to a JSON array of objects |
 | PDF → Text | PDF | TXT | Extract all selectable text content from a PDF |
 | PDF Merge / Split | PDF(s) | PDF or ZIP | Combine multiple PDFs or extract page ranges |
@@ -62,16 +63,21 @@ Output installers are in `src-tauri/target/release/bundle/`.
 ```
 formatrix/
 ├── src/                    # Svelte frontend
-│   ├── lib/                # Components and stores
+│   ├── lib/
+│   │   ├── components/     # Svelte UI components
+│   │   ├── api.ts          # Tauri IPC calls
+│   │   ├── utils.ts        # Shared utilities
+│   │   └── types.ts        # TypeScript type definitions
 │   └── app.css             # Global styles
 ├── src-tauri/              # Rust backend
 │   ├── src/
 │   │   ├── lib.rs          # Tauri entry point
 │   │   ├── commands/       # IPC command handlers
 │   │   └── processor/      # One module per operation
+│   ├── tests/              # Integration tests
 │   ├── Cargo.toml
 │   └── tauri.conf.json
-├── docs/                   # All project documentation
+├── docs/                   # Project documentation
 └── package.json
 ```
 
@@ -86,8 +92,14 @@ Formatrix Desktop is the first phase of the Formatrix project. The web applicati
 ## Known Limitations
 
 - PDF text extraction works on selectable-text PDFs only. Scanned image-based PDFs return empty output.
-- No batch processing in v1 — one job at a time.
 - No operation history between sessions.
+
+---
+
+## Documentation
+
+- [CHANGELOG](docs/CHANGELOG.md) — release history
+- [CONTRIBUTING](docs/CONTRIBUTING.md) — how to contribute
 
 ---
 
