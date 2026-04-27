@@ -37,6 +37,16 @@
   let error = $state("");
   let isProcessing = $state(false);
 
+  // --- Processing Time State ---
+  let elapsedTime = $state(0);
+  let timerInterval: ReturnType<typeof setInterval> | undefined;
+
+  function formatTime(seconds: number) {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${s.toString().padStart(2, "0")}`;
+  }
+
   // --- Toast State ---
   let toastMessage = $state("");
   let toastType = $state<"info" | "error" | "success">("info");
@@ -144,6 +154,14 @@
       isValidImageOpts,
   );
 
+  let windowTitle = $derived(
+    step === "processing"
+      ? `Processing... - Formatrix`
+      : currentOp
+        ? `${currentOp.title} - Formatrix`
+        : `Formatrix`,
+  );
+
   // --- Handlers ---
   function selectOperation(type: TaskType) {
     selectedOp = type;
@@ -241,6 +259,11 @@
     progressStage = "Starting...";
     result = undefined;
     error = "";
+    elapsedTime = 0;
+
+    timerInterval = setInterval(() => {
+      elapsedTime++;
+    }, 1000);
 
     const unlisten = await listenToProgress((p: ProgressPayload) => {
       progress = p.percent;
@@ -272,6 +295,10 @@
     } catch (e) {
       error = String(e);
     } finally {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = undefined;
+      }
       unlisten();
       isProcessing = false;
       step = "result";
@@ -332,6 +359,10 @@
   onerror={handleGlobalError}
   onunhandledrejection={handleUnhandledRejection}
 />
+
+<svelte:head>
+  <title>{windowTitle}</title>
+</svelte:head>
 
 {#if toastMessage}
   <Toast message={toastMessage} type={toastType} onclose={closeToast} />
@@ -468,6 +499,9 @@
               <div class="processing-spinner"></div>
               <h2 class="processing-title">Processing…</h2>
               <ProgressBar percent={progress} stage={progressStage} />
+              <div class="processing-time mono text-dim">
+                Elapsed: {formatTime(elapsedTime)}
+              </div>
             </div>
           </div>
 
@@ -723,5 +757,16 @@
     font-size: 16px;
     font-weight: 600;
     color: var(--text);
+  }
+
+  /* --- Responsive Breakpoints --- */
+  @media (max-width: 640px) {
+    .configure-layout {
+      grid-template-columns: 1fr;
+    }
+
+    .app-header {
+      padding: var(--space-sm) var(--space-md);
+    }
   }
 </style>
