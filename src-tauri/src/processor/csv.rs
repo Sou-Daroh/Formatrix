@@ -14,6 +14,12 @@ pub fn process(input_path: &str, options: &CsvOptions) -> Result<ProcessResult, 
         .map(|h| h.trim().to_string())
         .collect::<Vec<String>>();
 
+    if headers.is_empty() || headers.iter().all(|h| h.is_empty()) {
+        return Err(ProcessError::Validation(
+            "CSV file is empty or has no valid headers".to_string(),
+        ));
+    }
+
     let mut records: Vec<serde_json::Map<String, serde_json::Value>> = Vec::new();
 
     for result in reader.records() {

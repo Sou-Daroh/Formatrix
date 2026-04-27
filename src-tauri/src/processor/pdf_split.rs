@@ -19,13 +19,13 @@ pub fn split(input_path: &str, options: &PdfSplitOptions) -> Result<ProcessResul
     let pages = doc.get_pages();
     let total_pages = pages.len() as u32;
 
-    let ranges = if options.pages.is_empty() {
-        (1..=total_pages)
-            .map(|p| (p, p))
-            .collect::<Vec<(u32, u32)>>()
-    } else {
-        parse_page_ranges(&options.pages, total_pages)?
-    };
+    if options.pages.trim().is_empty() {
+        return Err(ProcessError::Validation(
+            "page ranges cannot be empty".to_string(),
+        ));
+    }
+
+    let ranges = parse_page_ranges(&options.pages, total_pages)?;
 
     let temp_dir = create_temp_dir()?;
     let split_dir = temp_dir.join("split");
@@ -128,4 +128,36 @@ fn parse_page_ranges(input: &str, total: u32) -> Result<Vec<(u32, u32)>, Process
         }
     }
     Ok(ranges)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_parse_page_ranges() {
+        let total = 10;
+
+        // Single pages and ranges
+        assert_eq!(
+            parse_page_ranges("1, 3, 5-7", total).unwrap(),
+            vec![(1, 1), (3, 3), (5, 7)]
+        );
+
+        // Spacing variations
+        assert_eq!(
+            parse_page_ranges(" 1,3 , 5 - 7 ", total).unwrap(),
+            vec![(1, 1), (3, 3), (5, 7)]
+        );
+
+        // Out of bounds
+        assert!(parse_page_ranges("11", total).is_err());
+        assert!(parse_page_ranges("0", total).is_err());
+        assert!(parse_page_ranges("1-11", total).is_err());
+
+        // Invalid syntax
+        assert!(parse_page_ranges("abc", total).is_err());
+        assert!(parse_page_ranges("1-2-3", total).is_err());
+        assert!(parse_page_ranges("5-3", total).is_err()); // start > end
+    }
 }
